@@ -1,15 +1,11 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import path from 'path'
-import { fileURLToPath } from 'url'
-import pluginJs from '@eslint/js'
-import eslintConfigPrettier from 'eslint-config-prettier';
+import globals from "globals";
+import pluginJs from "@eslint/js";
+import tseslint from "typescript-eslint";
+import pluginReactConfig from "eslint-plugin-react/configs/recommended.js";
 
-// mimic CommonJS variables -- not needed if using CommonJS
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({ baseDirectory: __dirname, recommendedConfig: pluginJs.configs.recommended })
 
 export default [
+    { files: ["**/*.js"], languageOptions: { sourceType: "commonjs" } },
     {
         languageOptions: {
             globals: {
@@ -28,7 +24,7 @@ export default [
             'quotes': ['error', 'double'],  // Enforce double quotes
             'indent': ['error', 2],  // Enforce 2-space indentation
         },
-    },
-    ...compat.extends('eslint:recommended'),  // Use recommended rules (ESLint 8+
-    eslintConfigPrettier,  // Ensure compatibility with Prettier
+    }, pluginJs.configs.recommended,
+    ...tseslint.configs.recommended,
+    pluginReactConfig,
 ];
