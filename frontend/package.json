@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "prisma generate && next dev",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "prepare": "npm install black && pip install black && cd .. && husky frontend/.husky",
@@ -12,13 +12,14 @@
   },
   "dependencies": {
     "black": "^0.3.0",
+    "@prisma/client": "^5.13.0",
     "next": "^14.2.3",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
-    "@types/node": "^20",
+    "@types/node": "^20.12.10",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8.57.0",
@@ -28,6 +29,7 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "postcss": "^8",
+    "prisma": "^5.13.0",
     "prettier": "^3.2.5",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
