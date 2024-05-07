@@ -54,5 +54,8 @@ export const options: NextAuthOptions = {
             session.realmId = token.realmId;
             return session
         }
+    },
+    session: {
+        maxAge: 24 * 60 * 60,
     }
 }
