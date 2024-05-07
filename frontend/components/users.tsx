@@ -9,7 +9,7 @@ export default async function Users() {
     const data = await fetcher();
     return (
         <div className="flex flex-col items-center justify-center py-2">
-            <h1 className="text-2xl font-bold mb-5">Users</h1>
+            <h1 className="text-2xl font-bold mb-5">Database Users</h1>
             <div className="overflow-x-auto">
                 <div className="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200">
                     <table className="min-w-full">

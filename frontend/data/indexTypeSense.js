@@ -1,9 +1,9 @@
-import Typesense from 'typesense';
-import UsersData from './users.json';
+const Typesense = require('typesense');
+const UsersData = require('./users.json');
 
 (async () => {
     const typesense = new Typesense.Client({
-        apiKey: process.env.TYPESENSE_ADMIN_API_KEY || 'xyz',
+        apiKey: 'xyz',
         nodes: [
             {
                 host: 'localhost',
@@ -30,7 +30,7 @@ import UsersData from './users.json';
         fields: [
             {
                 name: 'id',
-                type: 'int32',
+                type: 'string',
             },
             {
                 name: 'email',
@@ -42,10 +42,17 @@ import UsersData from './users.json';
     console.log('Populating collection...');
 
     try {
+        const users = UsersData.map((user) => {
+            return {
+                id: user.id.toString(),
+                email: user.email,
+            };
+        }
+        );
         const returnData = await typesense
             .collections('users')
             .documents()
-            .import(UsersData);
+            .import(users);
 
         console.log('Return data: ', returnData);
     } catch (err) {
