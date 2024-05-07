@@ -14,7 +14,7 @@ function Hit({ hit }: any) {
 export default function SearchEngine() {
     return (
         <div className="max-w-5xl mx-auto p-4">
-            <h1 className="text-2xl font-semibold mb-4">Search Engine</h1>
+            <h1 className="text-2xl font-semibold mb-4">Search Engine (not database users)</h1>
             <InstantSearch searchClient={typesenseInstantsearchAdapter.searchClient} indexName="users">
                 <div className="mb-4">
                     <SearchBox
