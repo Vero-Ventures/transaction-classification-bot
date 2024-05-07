@@ -11,8 +11,8 @@
     "postinstall": "node --eval \"require('fs').appendFileSync('.husky/_/pre-commit', '\\n cd frontend && npx lint-staged .\\n')\" && node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged .\\n')\""
   },
   "dependencies": {
-    "black": "^0.3.0",
     "@prisma/client": "^5.13.0",
+    "black": "^0.3.0",
     "next": "^14.2.3",
     "react": "^18",
     "react-dom": "^18"
