@@ -45,8 +45,8 @@ export default function Home() {
                         </tr>
                     </thead>
                     <tbody>
-                        {purchases.map((purchase: any) => (
-                            <tr key={purchase.DocNumber} className="border border-gray-300">
+                        {purchases.map((purchase: any, index: number) => (
+                            <tr key={index} className="border border-gray-300">
                                 <td className="border border-gray-300 px-4 py-2">{purchase.TxnDate}</td>
                                 <td className="border border-gray-300 px-4 py-2">{purchase.DocNumber}</td>
                                 <td className="border border-gray-300 px-4 py-2">{purchase.EntityRef?.name}</td>
