@@ -19,18 +19,22 @@ context_encoder_id = os.getenv("CONTEXT_MODEL_PATH")
 def load_model(model_path):
     if torch.cuda.is_available():
         device = "cuda"
+
+        quantization_config = BitsAndBytesConfig(load_in_4bit=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
+            device_map="auto",
+            quantization_config=quantization_config,
+            attn_implementation="flash_attention_2",
+        )
     else:
         device = "cpu"
 
+        model = AutoModelForCausalLM.from_pretrained(model_path)
+
     print("Device: " + device)
-    quantization_config = BitsAndBytesConfig(load_in_4bit=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        device_map="auto",
-        quantization_config=quantization_config,
-        attn_implementation="flash_attention_2",
-    )
+
     model.eval()
     tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=True)
     return model, tokenizer
