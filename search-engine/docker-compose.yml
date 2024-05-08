@@ -1,0 +1,10 @@
+services:
+  typesense:
+    image: typesense/typesense:26.0
+    restart: on-failure
+    ports:
+      - "8108:8108"
+    volumes:
+      - ./data:/data
+      - ./typesense-server.ini:/etc/typesense/typesense-server.ini
+    command: typesense-server --config=/etc/typesense/typesense-server.ini

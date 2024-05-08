@@ -1,1 +1,3 @@
 .DS_Store
+search-engine/data/*
+!search-engine/data/.gitkeep
