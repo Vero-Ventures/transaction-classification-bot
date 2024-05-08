@@ -9,7 +9,7 @@
     "lint": "next lint",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css}'",
     "prepare": "npm install black && pip install black && cd .. && husky frontend/.husky",
-    "postinstall": "node --eval \"require('fs').appendFileSync('.husky/_/pre-commit', '\\n cd frontend && npx lint-staged .\\n')\" && node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged .\\n')\""
+    "postinstall": "node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged .\\n')\""
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
