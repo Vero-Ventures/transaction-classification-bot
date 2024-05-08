@@ -29,10 +29,6 @@ jobs:
         with:
           node-version: '20.x'
           token: ${{ secrets.ACTIONS_TOKEN }}
-      
-      - name: Install Dependencies
-        run: npm install
-        working-directory: ./frontend
         
       - name: EsLint Check
         run: npm run lint
