@@ -1,0 +1,43 @@
+name: Prettier and Eslint Check
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.ACTIONS_TOKEN }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          token: ${{ secrets.ACTIONS_TOKEN }}
+      
+      - name: Install Dependencies
+        run: npm install
+        working-directory: ./frontend
+        
+      - name: EsLint Check
+        run: npm run lint
+        working-directory: ./frontend
+
+      - name: Prettier Check
+        run: npm run format
+        working-directory: ./frontend
