@@ -1,3 +1,4 @@
+import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
 
@@ -45,8 +46,13 @@ export const options: NextAuthOptions = {
                 token.expiresAt = account.expires_at;
 
                 cookies().delete('realmId');
+                return token
             }
-            return token
+            if (token.expiresAt && Date.now() / 1000 < token.expiresAt) {
+                return token
+            }
+
+            return refreshToken(token);
         },
         async session({ session, token }) {
             session.userId = token.userId;
