@@ -4,7 +4,6 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     AutoModel,
-    BitsAndBytesConfig,
 )
 import gc
 import os
@@ -20,6 +19,7 @@ def load_model(model_path):
     if torch.cuda.is_available():
         device = "cuda"
 
+        from transformers import BitsAndBytesConfig
         quantization_config = BitsAndBytesConfig(load_in_4bit=True)
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
