@@ -6,23 +6,49 @@
     "dev": "prisma generate && next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "npm install black && pip install black && cd .. && husky frontend/.husky",
+    "postinstall": "node --eval \"require('fs').appendFileSync('.husky/_/pre-commit', '\\n cd frontend && npx lint-staged .\\n')\" && node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged .\\n')\""
   },
   "dependencies": {
-    "@prisma/client": "^5.13.0",
+    "dotenv": "^16.4.5",
+    "intuit-oauth": "^4.1.2",
     "next": "14.2.3",
+    "next-auth": "^4.24.7",
+    "@prisma/client": "^5.13.0",
+    "black": "^0.3.0",
+    "next": "^14.2.3",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@eslint/js": "^9.1.1",
     "@types/node": "^20.12.10",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8",
+    "eslint": "^8.57.0",
     "eslint-config-next": "14.2.3",
+    "eslint-plugin-react": "^7.34.1",
+    "globals": "^15.1.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "postcss": "^8",
     "prisma": "^5.13.0",
+    "prettier": "^3.2.5",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^7.8.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "black"
+    ]
   }
 }
