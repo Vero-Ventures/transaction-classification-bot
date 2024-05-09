@@ -1,3 +1,4 @@
+import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
 
@@ -42,17 +43,27 @@ export const options: NextAuthOptions = {
                 token.accessToken = account.access_token;
                 token.refreshToken = account.refresh_token;
                 token.realmId = cookies().get('realmId')?.value;
+                token.expiresAt = account.expires_at;
 
                 cookies().delete('realmId');
+                return token
             }
-            return token
+            if (token.expiresAt && Date.now() / 1000 < token.expiresAt) {
+                return token
+            }
+
+            return refreshToken(token);
         },
         async session({ session, token }) {
             session.userId = token.userId;
             session.accessToken = token.accessToken;
             session.refreshToken = token.refreshToken;
             session.realmId = token.realmId;
+            session.expiresAt = token.expiresAt;
             return session
         }
+    },
+    session: {
+        maxAge: 24 * 60 * 60,
     }
 }
