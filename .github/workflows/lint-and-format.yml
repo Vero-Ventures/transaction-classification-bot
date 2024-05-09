@@ -4,7 +4,7 @@ name: Prettier and Eslint Check
 on:
   # Triggers the workflow on push request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [ "bugfix/dependancy-issue-github-action" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
           token: ${{ secrets.ACTIONS_TOKEN }}
         
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
         working-directory: ./frontend
 
       - name: EsLint Check
