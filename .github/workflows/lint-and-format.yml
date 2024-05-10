@@ -4,7 +4,7 @@ name: Prettier and Eslint Check
 on:
   # Triggers the workflow on push request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: [ "feature/add-ruff-support" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
       - name: Ruff Format Check
         run: ruff format
         working-directory: ./backend
-        
+
       - name: EsLint Check
         run: npm run lint
         working-directory: ./frontend
