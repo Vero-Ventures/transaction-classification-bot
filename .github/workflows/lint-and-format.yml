@@ -32,6 +32,19 @@ jobs:
         run: npm install
         working-directory: ./frontend
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Ruff Lint Check
+        run: ruff check --fix
+        working-directory: ./backend
+
+      - name: Ruff Format Check
+        run: ruff format
+        working-directory: ./backend
+        
       - name: EsLint Check
         run: npm run lint
         working-directory: ./frontend
