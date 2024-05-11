@@ -38,7 +38,7 @@ jobs:
           python-version: '3.12'
 
       - name: Ruff Lint Check
-        run: ruff check --fix
+        run: ruff check
         working-directory: ./backend
 
       - name: Ruff Format Check
