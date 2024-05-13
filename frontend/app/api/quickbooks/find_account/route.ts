@@ -26,7 +26,7 @@ export async function GET() {
             refreshToken,
         );
 
-        // Define the ID of the account to get (Change for searching).
+        // Define the ID of the account to get (Change this variable to search by ID).
         let ID = '0';
 
         // Search for an account with the matching ID.

@@ -26,7 +26,7 @@ export async function GET() {
             refreshToken,
         );
 
-        // Define the ID of the purchase object to get (Change for searching).
+        // Define the ID of the purchase object to get (Change this variable to search by ID).
         let ID = '57';
 
         // Search for a purchase object with the matching ID.
