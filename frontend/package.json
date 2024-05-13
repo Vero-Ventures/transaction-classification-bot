@@ -9,8 +9,8 @@
     "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css}'",
     "insert": "node data/indexTypeSense.js",
-    "prepare": "npm install black && pip install black && cd .. && husky frontend/.husky",
-    "postinstall": "node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged .\\n')\""
+    "prepare": "npm install ruff && pip install ruff && cd .. && husky frontend/.husky",
+    "postinstall": "node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged . && cd ../backend && ruff check --fix && ruff format\\n')\""
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
@@ -23,6 +23,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-instantsearch": "^7.7.3",
+    "ruff": "^1.5.4",
     "typesense": "^1.8.2",
     "typesense-instantsearch-adapter": "^2.8.0"
   },
@@ -53,7 +54,8 @@
       "prettier --write"
     ],
     "*.py": [
-      "black"
+      "ruff check --fix",
+      "ruff format"
     ]
   }
 }
