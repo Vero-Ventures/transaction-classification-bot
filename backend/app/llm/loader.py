@@ -20,6 +20,7 @@ def load_model(model_path):
         device = "cuda"
 
         from transformers import BitsAndBytesConfig
+
         quantization_config = BitsAndBytesConfig(load_in_4bit=True)
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
