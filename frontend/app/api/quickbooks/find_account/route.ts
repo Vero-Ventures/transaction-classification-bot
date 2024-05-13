@@ -9,7 +9,7 @@ export async function GET() {
     const realmId = session?.realmId;
     const refreshToken = session?.refreshToken;
 
-    // Try to get the account and catch any errors.
+    // Try to get a specific account and catch any errors.
     try {
         
         // Create the QuickBooks object.

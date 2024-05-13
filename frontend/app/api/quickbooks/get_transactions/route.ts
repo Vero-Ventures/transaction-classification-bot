@@ -9,7 +9,7 @@ export async function GET() {
     const realmId = session?.realmId;
     const refreshToken = session?.refreshToken;
 
-    // Try to get all expense accounts and catch any errors.
+    // Try to get all transactions we care about in a set time period and catch any errors.
     try {
         // Create the QuickBooks object.
         const qbo = new QB(
