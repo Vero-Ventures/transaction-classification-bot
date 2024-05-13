@@ -21,7 +21,8 @@ export default [
     {
         rules: {
             'react/react-in-jsx-scope': 'off',  // No need for React import with modern React
-            '@typescript-eslint/no-var-requires': 'off'
+            '@typescript-eslint/no-var-requires': 'off',
+            "@typescript-eslint/no-explicit-any": "warn"
         },
         settings: {
             react: {
