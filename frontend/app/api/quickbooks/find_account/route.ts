@@ -26,11 +26,11 @@ export async function GET() {
             refreshToken,
         );
 
-        // Define the ID of the account to get.
-        let ID = '7';
+        // Define the ID of the account to get (Change for searching).
+        let ID = '0';
 
-        // Get the account.
-        const resp: any = await new Promise((resolve, reject) => {
+        // Search for an account with the matching ID.
+        const response: any = await new Promise((resolve, reject) => {
             qbo.getAccount(ID, (err: Error, data: any) => {
                 if (err) {
                     reject(err);
@@ -40,7 +40,7 @@ export async function GET() {
         });
 
         // Get response as result and remove unnecessary fields.
-        const results = resp
+        const results = response;
         delete results.FullyQualifiedName;
         delete results.CurrentBalance;
         delete results.CurrentBalanceWithSubAccounts;

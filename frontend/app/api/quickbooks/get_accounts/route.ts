@@ -25,9 +25,9 @@ export async function GET() {
             refreshToken,
         );
 
-        // Get the expense accounts.
-        const resp: any = await new Promise((resolve, reject) => {
-            qbo.findAccounts({Classification: 'Expense'}, (err: Error, data: any) => {
+        // Get the expense accounts by searching by their classification. Returns a limit of 1000 accounts.
+        const response: any = await new Promise((resolve, reject) => {
+            qbo.findAccounts({Classification: 'Expense', limit: 1000}, (err: Error, data: any) => {
                 if (err) {
                     reject(err);
                 }
@@ -36,7 +36,7 @@ export async function GET() {
         });
 
         // Get response as result array.
-        const results = resp.QueryResponse.Account
+        const results = response.QueryResponse.Account;
 
         // For each account object, remove unnecessary fields and delete any inactive accounts.
         for (let account = 0; account < results.length; account++) {
@@ -61,6 +61,11 @@ export async function GET() {
             delete results[account].SyncToken;
             delete results[account].MetaData;
         }
+
+        // Preform any additional filtering here.
+        // ***************************************
+
+        // ***************************************
         
         // Show results.
         return Response.json(results);
