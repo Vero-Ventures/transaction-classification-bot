@@ -9,6 +9,7 @@
     "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css}'",
     "insert": "node data/indexTypeSense.js",
+    "create-transactions-collection": "node scripts/createTransactionsCollection.js",
     "prepare": "npm install ruff && cd .. && husky frontend/.husky",
     "postinstall": "node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged . && cd ../backend && ruff check --fix && ruff format\\n')\""
   },
@@ -25,13 +26,15 @@
     "react-instantsearch": "^7.7.3",
     "ruff": "^1.5.4",
     "typesense": "^1.8.2",
-    "typesense-instantsearch-adapter": "^2.8.0"
+    "typesense-instantsearch-adapter": "^2.8.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@types/node": "^20.12.10",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.8",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.3",
     "eslint-plugin-react": "^7.34.1",
