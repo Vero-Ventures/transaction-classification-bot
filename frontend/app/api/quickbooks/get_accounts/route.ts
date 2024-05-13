@@ -60,6 +60,7 @@ export async function GET() {
             delete results[account].domain;
             delete results[account].SyncToken;
             delete results[account].MetaData;
+            delete results[account].sparse;
         }
 
         // Preform any additional filtering here.
