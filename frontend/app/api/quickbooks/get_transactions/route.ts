@@ -63,6 +63,7 @@ export async function GET() {
                 let formatted_result = {
                     date: results[account].ColData[0].value,
                     transaction_type: results[account].ColData[1].value,
+                    transaction_ID: results[account].ColData[1].id,
                     name: results[account].ColData[2].value,
                     account: results[account].ColData[3].value,
                     category: results[account].ColData[4].value,
