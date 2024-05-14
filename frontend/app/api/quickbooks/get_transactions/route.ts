@@ -59,8 +59,8 @@ export async function GET() {
             // Add the success message.
             formatted_transactions.push({
                 result: "Success",
-                message: "Accounts found successfully.",
-                detail: "The account objects were found successfully."
+                message: "Transactions found successfully.",
+                detail: "The transaction objects were found successfully."
             })
         } else {
             // Add the error message with values from the response.
