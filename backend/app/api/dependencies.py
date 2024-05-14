@@ -1,5 +1,5 @@
 import json
-from fastapi import HTTPException, status, Security, Request
+from fastapi import HTTPException, status, Security
 from fastapi.security import APIKeyHeader, APIKeyQuery
 from dotenv import load_dotenv
 import os

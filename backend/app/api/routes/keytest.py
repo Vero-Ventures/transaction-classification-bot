@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Security, Depends
+from fastapi import APIRouter, Depends
 from api.dependencies import check_key
 
 router = APIRouter()
