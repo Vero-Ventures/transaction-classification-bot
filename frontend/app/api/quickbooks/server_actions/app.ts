@@ -204,7 +204,7 @@ export async function get_transactions() {
 
 
 // Find a specific purchase object by its ID.
-export async function find_purchase(id: string) {
+export async function find_purchase(id: string, format_result: boolean) {
 
     // Get the server session and save it as a constant.
     const session = await getServerSession(options);
@@ -248,6 +248,12 @@ export async function find_purchase(id: string) {
                 resolve(data);
             });
         });
+
+        // If the user does not want a formatted result, return the raw response.
+        // This is primarily used for updating the purchase classification.
+        if (!format_result) {
+            return response;
+        }
 
         // Create a formatted result object with all fields set to null.
         var formatted_result = {
