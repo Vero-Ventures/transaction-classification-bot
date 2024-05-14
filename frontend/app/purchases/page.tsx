@@ -11,7 +11,7 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const response = await fetch('/api/quickbooks/transactions', {});
+        const response = await fetch('/api/quickbooks/get_purchases', {});
         if (!response.ok) {
           throw new Error('Failed to fetch purchases');
         }
