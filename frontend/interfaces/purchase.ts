@@ -13,6 +13,11 @@ export interface Purchase {
     name: string;
   };
   PaymentType: string;
+  EntityRef?: {
+    value: string;
+    name: string;
+    type: string;
+  };
   TotalAmt: number;
   PurchaseEx?: {
     any: {
@@ -36,6 +41,7 @@ export interface Purchase {
     CreateTime: string;
     LastUpdatedTime: string;
   };
+  DocNumber?: string;
   TxnDate: string;
   CurrencyRef: {
     value: string;
