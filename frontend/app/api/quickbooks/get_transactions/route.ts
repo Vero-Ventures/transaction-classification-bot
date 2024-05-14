@@ -3,15 +3,20 @@ import { getServerSession } from "next-auth";
 const QB = require('node-quickbooks');
 
 export async function GET() {
+
+    // Get the server session and save it as a constant.
     const session = await getServerSession(options);
-    
+
+    // Record the server session values.
     const oauthToken = session?.accessToken;
     const realmId = session?.realmId;
     const refreshToken = session?.refreshToken;
 
-    // Try to get all transactions we care about in a set time period and catch any errors.
+    // Try to get all purchase transaction objects from the API.
+    // Catches any errors that occur and returns them as a response.
     try {
-        // Create the QuickBooks object.
+
+        // Create the QuickBooks API calls object.
         const qbo = new QB(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,
@@ -25,42 +30,56 @@ export async function GET() {
             refreshToken,
         );
 
-        // Define the parameters for the report. 
+        // Create tracker to indicate if the query was successful or not.
+        let success = true;
+ 
         // Defines a start and end date as well as what columns to include for each report.
         let parameters = {start_date: '2022-01-01', end_date: '2024-12-31', limit: 1000, columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type', 'subt_nat_amount']};
-        // Get the expense accounts.
+        
+        // Get the all purchase transactions.
         const response: any = await new Promise((resolve, reject) => {
             qbo.reportTransactionList(parameters, (err: Error, data: any) => {
-                if (err) {
-                    reject(err);
+                // If there is an error, check if it has a 'Fault' property 
+                // Then resolve the error to allow a formatted JSON error message to be passed to the caller.
+                if (err && 'Fault' in err) {
+                    success = false;
+                    resolve(err.Fault);
                 }
+                // If there is no error, resolve the data to allow the caller to access the results.
                 resolve(data);
             });
         });
 
-        // Get response as result array.
+        // Get the response and create an array to hold the formatted transactions.
         const results = response.Rows.Row;
-        const formatted_results = [];
+        const formatted_transactions = [];
+
+        // Fill the first value in the array with the success or error message.
+        if (success) {
+            // Add the success message.
+            formatted_transactions.push({
+                result: "Success",
+                message: "Accounts found successfully.",
+                detail: "The account objects were found successfully."
+            })
+        } else {
+            // Add the error message with values from the response.
+            formatted_transactions.push({
+                result: "Error",
+                message: results.Error[0].Message,
+                detail: results.Error[0].Detail
+            })
+        }
 
         // Define valid transaction types.
         let purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense"]
 
-        // For each account object, remove unnecessary fields and delete any inactive accounts.
+        // For each account object create a formatted transaction object and add it to the array.
         for (let account = 0; account < results.length; account++) {
-            // Delete any inactive accounts.
-            if (!purchase_transactions.includes(results[account].ColData[1].value)) {
-                // Splice out the inactive account.
-                results.splice(account, 1);
-                // Decrement the account index, because the splice moved each remaining account back one index.
-                // Skip for last account: no remaining accounts to check.
-                if (account !== results.length - 1) {
-                    account--;
-                }
-                // Skip to next account.
-                continue;
-            } else {
-                // Create a formatted result object for an individual transaction.
-                let formatted_result = {
+            // Skip any inactive accounts by checking active value before recording the transactions.
+            if (purchase_transactions.includes(results[account].ColData[1].value)) {
+                // Add a new formatted transaction to the array.
+                formatted_transactions.push({
                     date: results[account].ColData[0].value,
                     transaction_type: results[account].ColData[1].value,
                     transaction_ID: results[account].ColData[1].id,
@@ -68,20 +87,15 @@ export async function GET() {
                     account: results[account].ColData[3].value,
                     category: results[account].ColData[4].value,
                     amount: results[account].ColData[5].value
-                }
-                formatted_results.push(formatted_result);
+                });
             }
         }
+        
+        // Return the formatted results.
+        return Response.json(formatted_transactions);
 
-        // Preform any additional filtering here.
-        // ***************************************
-        
-        // ***************************************
-        
-        // Show formatted results.
-        return Response.json(formatted_results);
     } catch (error) {
-        // Show the caught error.
+        // Return any caught errors.
         return Response.error();
     }
 }

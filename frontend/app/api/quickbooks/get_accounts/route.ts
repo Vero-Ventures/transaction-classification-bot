@@ -48,10 +48,8 @@ export async function GET() {
             });
         });
 
-        // Get response as result array.
+        // Get the response and create an array to hold the formatted accounts.
         const results = response.QueryResponse.Account;
-
-        // Create an array to hold the accounts.
         let formatted_accounts = [];
 
         // Fill the first value in the array with the success or error message.
@@ -76,7 +74,7 @@ export async function GET() {
         for (let account = 0; account < results.length; account++) {
             // Only add active accounts
             if (results[account].Active) {
-                // Add the account to the accounts array.
+                // Add a new formatted account to the accounts array.
                 formatted_accounts.push({
                     id: results[account].Id,
                     name: results[account].Name,
