@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { formatPrice } from '@/utils/format-price';
 import { Purchase } from '@/interfaces/purchase';
-import { LineItem } from '@/interfaces/line';
 
 export default function TransactionsPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -61,14 +60,14 @@ export default function TransactionsPage() {
                   {purchase.EntityRef?.name}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
-                  {purchase.Line.map((lineItem: LineItem, index: number) => (
-                    <span key={index}>
-                      {lineItem.AccountBasedExpenseLineDetail?.AccountRef
-                        .name ||
-                        lineItem.ItemBasedExpenseLineDetail?.ItemRef.name}
-                      {index < purchase.Line.length - 1 && ', '}
+                  {purchase.Line.length > 0 && (
+                    <span>
+                      {purchase.Line[0].AccountBasedExpenseLineDetail
+                        ?.AccountRef.name ||
+                        purchase.Line[0].ItemBasedExpenseLineDetail?.ItemRef
+                          .name}
                     </span>
-                  ))}
+                  )}
                 </td>
                 <td className="border border-gray-300 px-4 py-2">
                   {formatPrice(purchase.TotalAmt)}
