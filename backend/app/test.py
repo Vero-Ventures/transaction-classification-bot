@@ -18,7 +18,7 @@ def get_formatted_input(messages, context):
         "\n\n".join(
             [
                 (
-                                        "User: " + item["content"]
+                    "User: " + item["content"]
                     if item["role"] == "user"
                     else "Assistant: " + item["content"]
                 )
@@ -30,10 +30,3 @@ def get_formatted_input(messages, context):
     formatted_input = system + "\n\n" + context + "\n\n" + conversation
 
     return formatted_input
-
-
-
-
-
-
-
