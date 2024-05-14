@@ -316,3 +316,64 @@ export async function find_purchase(id: string) {
         return JSON.stringify(error);
     }
 }
+
+// Update a specific purchase object passed to the function.
+export async function update_purchase(new_account_id: string, new_account_name: string, purchase: any) {
+    // Get the server session and save it as a constant.
+    const session = await getServerSession(options);
+
+    // Record the server session values.
+    const oauthToken = session?.accessToken;
+    const realmId = session?.realmId;
+    const refreshToken = session?.refreshToken;
+
+    // Try to update a specific purchase object from the API.
+    // Catches any errors that occur and returns them as a response.
+    try {
+
+        // Create the QuickBooks API calls object.
+        const qbo = new QB(
+            process.env.CLIENT_ID,
+            process.env.CLIENT_SECRET,
+            oauthToken,
+            false,
+            realmId,
+            true,
+            true,
+            null,
+            '2.0',
+            refreshToken,
+        );
+
+        // Create a copy of the purchase object to hold the updated purchase.
+        let update_purchase =  purchase;
+
+        // Use the purchase object passed to the function to update the purchase object.
+        // Check each element in the line for the specific line that contains the categorizing account.
+        for (let i = 0; i < update_purchase.Line.length; i++) {
+            if (update_purchase.Line[i].DetailType === 'AccountBasedExpenseLineDetail') {
+                // If it is present, update the purchase category field of the formatted results.
+                update_purchase.Line[i].AccountBasedExpenseLineDetail.AccountRef.value = new_account_id;
+                update_purchase.Line[i].AccountBasedExpenseLineDetail.AccountRef.name = new_account_name;
+                break;
+            }
+        }
+
+        // Update the purchase object with the updated account values.
+        await new Promise((resolve, reject) => {
+            qbo.updatePurchase(update_purchase, (err: Error, data: any) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(data);
+            });
+        });
+
+        // Return the formatted and updated purchase.
+        return JSON.stringify(purchase);
+
+    } catch (error) {
+        // Return any caught errors.
+        return JSON.stringify(error);
+    }
+}
