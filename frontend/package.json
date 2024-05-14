@@ -8,8 +8,6 @@
     "start": "next start",
     "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css}'",
-    "insert": "node data/indexTypeSense.js",
-    "create-transactions-collection": "node scripts/createTransactionsCollection.js",
     "prepare": "npm install ruff && cd .. && husky frontend/.husky",
     "postinstall": "node --eval \"require('fs').writeFileSync('.husky/pre-commit', 'cd frontend && npx lint-staged . && cd ../backend && ruff check --fix && ruff format\\n')\""
   },
@@ -17,17 +15,14 @@
     "@prisma/client": "^5.13.0",
     "black": "^0.3.0",
     "dotenv": "^16.4.5",
+    "fuse.js": "^7.0.0",
     "intuit-oauth": "^4.1.2",
     "next": "14.2.3",
     "next-auth": "^4.24.7",
     "node-quickbooks": "^2.0.45",
     "react": "^18",
     "react-dom": "^18",
-    "react-instantsearch": "^7.7.3",
-    "ruff": "^1.5.4",
-    "typesense": "^1.8.2",
-    "typesense-instantsearch-adapter": "^2.8.0",
-    "uuid": "^9.0.1"
+    "ruff": "^1.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

@@ -1,24 +1,51 @@
 'use server';
-import { Transaction, SearchEngineTransaction } from '@/types/Transaction';
-import { typesense } from '@/lib/typesense-client';
-import { v4 as uuidv4 } from 'uuid';
+import { Transaction, CategorizedResult } from '@/types/Transaction';
+import Fuse from 'fuse.js';
 
-export const classify = async (transactions: Transaction[]) => {
-  const userID = uuidv4();
-  const transactionsWithUserID: SearchEngineTransaction[] = transactions.map(
-    transaction => ({
-      ...transaction,
-      userId: userID,
-    })
+export const classifyTransactions = async (
+  categorizedTransactions: Transaction[],
+  uncategorizedTransactions: Transaction[]
+) => {
+  console.log(
+    'categorizedTransactions',
+    JSON.stringify(categorizedTransactions, null, 2)
+  );
+  console.log(
+    'uncategorizedTransactions',
+    JSON.stringify(uncategorizedTransactions, null, 2)
   );
 
   try {
-    const result = await typesense
-      .collections('transactions')
-      .documents()
-      .import(transactionsWithUserID);
-    console.log('Transactions added:', result);
+    if (!Array.isArray(categorizedTransactions)) {
+      throw new Error('categorizedTransactions is not an array');
+    }
+
+    const fuse = new Fuse(categorizedTransactions, {
+      includeScore: true,
+      threshold: 0.3,
+      keys: ['name'],
+    });
+
+    const results: CategorizedResult[] = uncategorizedTransactions.map(
+      uncategorized => {
+        try {
+          const matches = fuse.search(uncategorized.name);
+          const possibleCategories = matches.map(match => match.item.category);
+          return {
+            transaction_ID: uncategorized.transaction_ID,
+            possibleCategories: possibleCategories,
+          };
+        } catch (error) {
+          console.error('Error mapping uncategorized transaction:', error);
+          throw new Error('Error mapping uncategorized transaction');
+        }
+      }
+    );
+
+    console.log('Classification Results:', results);
+    return { message: 'Categorized Results returned', data: results };
   } catch (error) {
-    console.error('Error adding transactions:', error);
+    console.error('Error classifying transactions:', error);
+    throw new Error('Error classifying transactions');
   }
 };

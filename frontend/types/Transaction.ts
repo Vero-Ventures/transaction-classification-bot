@@ -1,6 +1,7 @@
 export type Transaction = {
   date: string;
-  transaction_type: 'Check' | 'Cash Expense' | 'Credit Card Expense';
+  // transaction_type: 'Check' | 'Cash Expense' | 'Credit Card Expense';
+  transaction_type: string;
   transaction_ID: string;
   name: string;
   account: string;
@@ -8,13 +9,7 @@ export type Transaction = {
   amount: string;
 };
 
-export type SearchEngineTransaction = {
-  userId: string;
-  date: string;
-  transaction_type: 'Check' | 'Cash Expense' | 'Credit Card Expense';
+export type CategorizedResult = {
   transaction_ID: string;
-  name: string;
-  account: string;
-  category: string;
-  amount: string;
+  possibleCategories: string[];
 };
