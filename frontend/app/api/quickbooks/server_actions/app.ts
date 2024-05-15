@@ -174,12 +174,12 @@ export async function get_transactions() {
         }
 
         // Define valid transaction types.
-        let purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense"]
+        let purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
 
         // For each account object create a formatted transaction object and add it to the array.
         for (let account = 0; account < results.length; account++) {
             // Skip any inactive accounts by checking active value before recording the transactions.
-            if (purchase_transactions.includes(results[account].ColData[1].value)) {
+            if (purchase_transactions.includes(results[account].ColData[1].value) && results[account].ColData[2].value !== "") {
                 // Add a new formatted transaction to the array.
                 formatted_transactions.push({
                     date: results[account].ColData[0].value,
