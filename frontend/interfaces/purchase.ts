@@ -1,12 +1,3 @@
-export interface PurchaseResponse {
-  QueryResponse: {
-    Purchase: Purchase[];
-    startPosition: number;
-    maxResults: number;
-  };
-  time: string;
-}
-
 export interface Purchase {
   AccountRef: {
     value: string;
