@@ -50,7 +50,7 @@ export async function GET() {
 
         // Get the response and create an array to hold the formatted accounts.
         const results = response.QueryResponse.Account;
-        let formatted_accounts = [];
+        const formatted_accounts = [];
 
         // Fill the first value in the array with the success or error message.
         if (success) {

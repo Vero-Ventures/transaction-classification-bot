@@ -136,7 +136,7 @@ export async function get_transactions() {
         let success = true;
 
         // Defines a start and end date as well as what columns to include for each report.
-        let parameters = { start_date: '2022-01-01', end_date: '2024-12-31', limit: 1000, columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type', 'subt_nat_amount'] };
+        const parameters = { start_date: '2022-01-01', end_date: '2024-12-31', limit: 1000, columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type', 'subt_nat_amount'] };
 
         // Get the all purchase transactions.
         const response: any = await new Promise((resolve, reject) => {
@@ -174,7 +174,7 @@ export async function get_transactions() {
         }
 
         // Define valid transaction types.
-        let purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
+        const purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
 
         // For each account object create a formatted transaction object and add it to the array.
         for (let account = 0; account < results.length; account++) {
@@ -256,7 +256,7 @@ export async function find_purchase(id: string, format_result: boolean) {
         }
 
         // Create a formatted result object with all fields set to null.
-        var formatted_result = {
+        let formatted_result = {
             result_info: {
                 result: "",
                 message: "",
@@ -352,7 +352,7 @@ export async function update_purchase(new_account_id: string, new_account_name: 
         );
 
         // Create a copy of the purchase object to hold the updated purchase.
-        let update_purchase =  purchase;
+        const update_purchase = purchase;
 
         // Use the purchase object passed to the function to update the purchase object.
         // Check each element in the line for the specific line that contains the categorizing account.

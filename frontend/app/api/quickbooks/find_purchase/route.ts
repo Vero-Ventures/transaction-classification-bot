@@ -31,7 +31,7 @@ export async function GET() {
         );
 
         // ***TEMP***
-        let ID = '57';
+        const ID = '57';
 
         // Create tracker to indicate if the query was successful or not.
         let success = true;
@@ -51,7 +51,7 @@ export async function GET() {
         });
 
         // Create a formatted result object with all fields set to null.
-        var formatted_result = {
+        let formatted_result = {
             result_info: {
                 result: "",
                 message: "",

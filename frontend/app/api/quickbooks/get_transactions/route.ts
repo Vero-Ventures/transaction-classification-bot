@@ -34,7 +34,7 @@ export async function GET() {
         let success = true;
  
         // Defines a start and end date as well as what columns to include for each report.
-        let parameters = {start_date: '2022-01-01', end_date: '2024-12-31', limit: 1000, columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type', 'subt_nat_amount']};
+        const parameters = {start_date: '2022-01-01', end_date: '2024-12-31', limit: 1000, columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type', 'subt_nat_amount']};
         
         // Get the all purchase transactions.
         const response: any = await new Promise((resolve, reject) => {
@@ -72,7 +72,7 @@ export async function GET() {
         }
 
         // Define valid transaction types.
-        let purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
+        const purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
 
         // For each account object create a formatted transaction object and add it to the array.
         for (let account = 0; account < results.length; account++) {
@@ -89,7 +89,7 @@ export async function GET() {
                     amount: results[account].ColData[5].value
                 });
             }
-        }
+        }   
         
         // Return the formatted results.
         return Response.json(formatted_transactions);
