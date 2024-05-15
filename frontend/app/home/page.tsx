@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatPrice } from '@/utils/format-price';
 import { formatDate } from '@/utils/format-date';
 import { Purchase } from '@/interfaces/purchase';
+import { filterPurchases } from '@/utils/filter-uncategorized-purchases';
 
 export default function TransactionsPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -19,7 +20,8 @@ export default function TransactionsPage() {
           throw new Error('Failed to fetch purchases');
         }
         const data = await response.json();
-        setPurchases(data);
+        const filteredPurchases = filterPurchases(data);
+        setPurchases(filteredPurchases);
       } catch (error) {
         console.error('Error fetching purchases:', error);
       }
