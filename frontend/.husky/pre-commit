@@ -1,1 +1,0 @@
-cd frontend && npx lint-staged . && cd ../backend && ruff check --fix && ruff format

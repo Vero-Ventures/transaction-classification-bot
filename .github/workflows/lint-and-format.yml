@@ -37,18 +37,14 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Ruff Lint Check
-        run: ruff check
-        working-directory: ./backend
+      - name: Install pre-commit
+        run: pip install pre-commit # This ensures pre-commit is 
+      
+      - name: Run pre-commit Hooks
+        run: pre-commit run --all-files # Runs the precommit hooks on all files
 
-      - name: Ruff Format Check
-        run: ruff format
-        working-directory: ./backend
-
-      - name: Prettier Check
-        run: npm run format
-        working-directory: ./frontend
-        
-      - name: EsLint Check
-        run: npm run lint
-        working-directory: ./frontend
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Apply pre-commit formatting changes
+          branch: ${{ github.head_ref }}
