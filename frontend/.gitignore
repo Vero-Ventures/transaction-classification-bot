@@ -39,5 +39,3 @@ next-env.d.ts
 # custom
 package-lock.json
 .DS_Store
-
-.vercel
