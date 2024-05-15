@@ -2,3 +2,4 @@
 /backend/.env
 search-engine/data/*
 !search-engine/data/.gitkeep
+/node_modules
