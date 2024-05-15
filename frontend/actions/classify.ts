@@ -6,15 +6,6 @@ export const classifyTransactions = async (
   categorizedTransactions: Transaction[],
   uncategorizedTransactions: Transaction[]
 ) => {
-  console.log(
-    'categorizedTransactions',
-    JSON.stringify(categorizedTransactions, null, 2)
-  );
-  console.log(
-    'uncategorizedTransactions',
-    JSON.stringify(uncategorizedTransactions, null, 2)
-  );
-
   try {
     if (!Array.isArray(categorizedTransactions)) {
       throw new Error('categorizedTransactions is not an array');
@@ -26,26 +17,80 @@ export const classifyTransactions = async (
       keys: ['name'],
     });
 
-    const results: CategorizedResult[] = uncategorizedTransactions.map(
-      uncategorized => {
-        try {
-          const matches = fuse.search(uncategorized.name);
-          const possibleCategories = matches.map(match => match.item.category);
-          return {
-            transaction_ID: uncategorized.transaction_ID,
-            possibleCategories: possibleCategories,
-          };
-        } catch (error) {
-          console.error('Error mapping uncategorized transaction:', error);
-          throw new Error('Error mapping uncategorized transaction');
-        }
-      }
-    );
+    const results: CategorizedResult[] = [];
+    const noMatches: Transaction[] = [];
 
-    console.log('Classification Results:', results);
+    uncategorizedTransactions.forEach(uncategorized => {
+      try {
+        const matches = fuse.search(uncategorized.name);
+        const possibleCategoriesSet = new Set(
+          matches.map(match => match.item.category)
+        );
+
+        if (possibleCategoriesSet.size === 0) {
+          noMatches.push(uncategorized);
+        } else {
+          results.push({
+            transaction_ID: uncategorized.transaction_ID,
+            possibleCategories: Array.from(possibleCategoriesSet),
+          });
+        }
+      } catch (error) {
+        console.error(
+          'Error mapping uncategorized transaction:',
+          uncategorized,
+          error,
+          'moving on...'
+        );
+      }
+    });
+
+    if (noMatches.length > 0) {
+      let llmApiResponse;
+      try {
+        llmApiResponse = await sendToLLMApi(noMatches, categorizedTransactions);
+        if (llmApiResponse && llmApiResponse.data) {
+          llmApiResponse.data.forEach((llmResult: CategorizedResult) => {
+            results.push({
+              transaction_ID: llmResult.transaction_ID,
+              possibleCategories: llmResult.possibleCategories,
+            });
+          });
+        }
+      } catch (error) {
+        console.log('Error from LLM API usage: ', error);
+      }
+    }
+
+    console.log('Successfully retrieved categorized transactions:', results);
     return { message: 'Categorized Results returned', data: results };
   } catch (error) {
     console.error('Error classifying transactions:', error);
-    throw new Error('Error classifying transactions');
+    return {
+      message: 'Error classifying uncategorized transaction:',
+      error: error,
+    };
   }
+};
+
+const sendToLLMApi = async (
+  uncategorizedTransactions: Transaction[],
+  categorizedTransactions: Transaction[]
+) => {
+  const response = await fetch(process.env.LLM_API_ENDPOINT as string, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      uncategorizedTransactions,
+      categorizedTransactions,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to send data to LLM API ${response}`);
+  }
+
+  return await response.json();
 };
