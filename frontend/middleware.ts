@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
 
     const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
     if (callbackUrl) {
-        return NextResponse.rewrite(new URL('/', 'http://localhost:3000'));
+        return NextResponse.rewrite(new URL('/', request.url));
     }
     return defaultMiddleware(request as NextRequestWithAuth);
 }
