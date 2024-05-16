@@ -4,14 +4,27 @@ import SelectionPage from "@/app/home/selection";
 import ReviewPage from "@/app/home/review";
 import { Purchase } from "@/interfaces/purchase";
 import { useEffect, useState } from "react";
-import { get_accounts } from "../api/quickbooks/server_actions/app";
+import { get_accounts, get_purchases } from "../api/quickbooks/server_actions/app";
+import { filterPurchases } from "@/utils/filter-uncategorized-purchases";
 
 export default function HomePage() {
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [categorizedResults, setCategorizedResults] = useState<any>({});
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedPurchases, setSelectedPurchases] = useState<Purchase[]>([]);
 
   useEffect(() => {
+    const fetchPurchases = async () => {
+      try {
+        const result = await get_purchases();
+        if (result) {
+          setPurchases(filterPurchases(result));
+        }
+      } catch (error) {
+        console.error('Error fetching purchases:', error);
+      }
+    }
+
     const fetchAccounts = async () => {
       try {
         const result = await get_accounts();
@@ -23,6 +36,7 @@ export default function HomePage() {
       }
     }
 
+    fetchPurchases();
     fetchAccounts();
   }, []);
 
@@ -44,7 +58,7 @@ export default function HomePage() {
     categorizedResults && Object.keys(categorizedResults).length > 0 ? (
       <ReviewPage selectedPurchases={selectedPurchases} categorizedResults={categorizedResults} />
     ) : (
-      <SelectionPage handleSubmit={handleSubmit} selectedPurchases={selectedPurchases} setSelectedPurchases={setSelectedPurchases} />
+      <SelectionPage purchases={purchases} handleSubmit={handleSubmit} selectedPurchases={selectedPurchases} setSelectedPurchases={setSelectedPurchases} />
     )
   );
 }

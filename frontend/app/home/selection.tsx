@@ -6,32 +6,19 @@ import { get_purchases } from '../api/quickbooks/server_actions/app';
 import { filterPurchases } from '@/utils/filter-uncategorized-purchases';
 
 export default function SelectionPage({
+    purchases,
     handleSubmit,
     selectedPurchases,
     setSelectedPurchases
 }: {
+    purchases: Purchase[];
     handleSubmit: (selectedPurchases: Purchase[]) => void;
     selectedPurchases: Purchase[];
     setSelectedPurchases: (selectedPurchases: Purchase[]) => void;
 }) {
-    const [purchases, setPurchases] = useState<Purchase[]>([]);
+    
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [sortColumn, setSortColumn] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchPurchases = async () => {
-            try {
-                const result = await get_purchases();
-                if (result) {
-                    setPurchases(filterPurchases(result));
-                }
-            } catch (error) {
-                console.error('Error fetching purchases:', error);
-            }
-        }
-
-        fetchPurchases();
-    }, []);
 
     const selectAll = () => {
         const isSelectedAll = purchases.length === selectedPurchases.length;
