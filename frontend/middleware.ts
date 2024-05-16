@@ -6,7 +6,7 @@ import type { NextRequestWithAuth } from 'next-auth/middleware'
 export function middleware(request: NextRequest) {
 
     const callbackUrl = request.nextUrl.searchParams.get('callbackUrl');
-    if (callbackUrl?.endsWith('/')) {
+    if (callbackUrl) {
         return NextResponse.rewrite(new URL('/', 'http://localhost:3000'));
     }
     return defaultMiddleware(request as NextRequestWithAuth);
