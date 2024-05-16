@@ -43,7 +43,7 @@ export async function POST(req: Request, res: Response) {
         });
         const contexts = await Promise.all(contextPromises);
 
-        console.log('contexts', contexts);
+        // console.log('contexts', contexts);
 
         const results: CategorizedResult[] = [];
         for (const { transaction_ID, prompt, context } of contexts) {
