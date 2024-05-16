@@ -62,30 +62,11 @@ export async function get_accounts() {
         // Create an array to hold the accounts.
         const formatted_accounts = [];
 
-        // Create a formatted result object with all fields set to null.
-        let QueryResult: QueryResult = {
-            result: "",
-            message: "",
-            detail: "",
-        };
-
-        // Fill the first value in the array with the success or error message.
-        if (success) {
-            // Set the query result to indicate success and provide a success message and detail.
-            QueryResult.result = "Success";
-            QueryResult.message = "Accounts found successfully.";
-            QueryResult.detail = "The account objects were found successfully.";
-        } else {
-            // Set the query result to indicate failure and provide a error message and detail.
-            QueryResult.result = "Error",
-            QueryResult.message = results.Error[0].Message;
-            QueryResult.detail = results.Error[0].Detail;
-            
-        }
+        // Create a formatted result object based on the query results.
+        const QueryResult = create_query_result(success, results);
 
         // Add the formatted result to the start of accounts array as error indication.
         formatted_accounts.push(QueryResult)
-
 
         // For each account object, remove unnecessary fields and delete any inactive accounts.
         for (let account = 0; account < results.length; account++) {
@@ -167,22 +148,11 @@ export async function get_transactions() {
         const results = response.Rows.Row;
         const formatted_transactions = [];
 
-        // Fill the first value in the array with the success or error message.
-        if (success) {
-            // Add the success message.
-            formatted_transactions.push({
-                result: "Success",
-                message: "Transactions found successfully.",
-                detail: "The transaction objects were found successfully."
-            })
-        } else {
-            // Add the error message with values from the response.
-            formatted_transactions.push({
-                result: "Error",
-                message: results.Error[0].Message,
-                detail: results.Error[0].Detail
-            })
-        }
+        // Create a formatted result object based on the query results.
+        const QueryResult = create_query_result(success, results);
+
+        // Add the formatted result to the start of accounts array as error indication.
+        formatted_transactions.push(QueryResult)
 
         // Define valid transaction types.
         const purchase_transactions = ["Check", "Cash Expense", "Credit Card Expense", "Expense"]
@@ -191,8 +161,8 @@ export async function get_transactions() {
         for (let account = 0; account < results.length; account++) {
             // Skip any inactive accounts by checking active value before recording the transactions.
             if (purchase_transactions.includes(results[account].ColData[1].value) && results[account].ColData[2].value !== "") {
-                // Add a new formatted transaction to the array.
-                formatted_transactions.push({
+                // Create a new formatted transaction object with the necessary fields.
+                const new_formatted_transaction: Transaction = ({
                     date: results[account].ColData[0].value,
                     transaction_type: results[account].ColData[1].value,
                     transaction_ID: results[account].ColData[1].id,
@@ -201,6 +171,8 @@ export async function get_transactions() {
                     category: results[account].ColData[4].value,
                     amount: results[account].ColData[5].value
                 });
+                // Add the transaction to the transactions array.
+                formatted_transactions.push(new_formatted_transaction);
             }
         }
 
@@ -212,7 +184,6 @@ export async function get_transactions() {
         return JSON.stringify(error);
     }
 }
-
 
 // Find a specific purchase object by its ID.
 export async function find_purchase(id: string, format_result: boolean) {
@@ -266,13 +237,12 @@ export async function find_purchase(id: string, format_result: boolean) {
             return response;
         }
 
+        // Create a formatted result object based on the query results.
+        const query_result = create_query_result(success, response);
+
         // Create a formatted result object with all fields set to null.
-        let formatted_result = {
-            result_info: {
-                result: "",
-                message: "",
-                detail: "",
-            },
+        const formatted_result: Purchase = {
+            result_info: query_result,
             id: "",
             purchase_type: "",
             date: "",
@@ -285,33 +255,16 @@ export async function find_purchase(id: string, format_result: boolean) {
         // Get the response from the search and create a formatted dictionary necessary fields.
         const results = response;
 
-        // If the results contain a fault (indicating an error with the search)
-        if (!success) {
-
-            // Update the results info to indicate an error and provide the error message and detail.
-            formatted_result.result_info.result = "Error";
-            formatted_result.result_info.message = results.Error[0].Message;
-            formatted_result.result_info.detail = results.Error[0].Detail;
-
-        } else {
-
+        // Check that the search was successful before updating the formatted results.
+        if (success) {
             // If the results do not contain a fault, update the formatted results with the necessary fields.
-            // Set the result info to indicate success and provide a success message and detail.
-            // Set the purchase info fields to the corresponding fields in the results.
-            formatted_result = {
-                result_info: {
-                    result: "Success",
-                    message: "Purchase found successfully.",
-                    detail: "The purchase object was found successfully."
-                },
-                id: results.Id,
-                purchase_type: results.PaymentType,
-                date: results.TxnDate,
-                total: results.TotalAmt,
-                primary_account: results.AccountRef.name,
-                purchase_name: results.EntityRef.name,
-                purchase_category: "None",
-            }
+            formatted_result.id = results.Id;
+            formatted_result.purchase_type = results.PaymentType;
+            formatted_result.date = results.TxnDate;
+            formatted_result.total = results.TotalAmt;
+            formatted_result.primary_account = results.AccountRef.name;
+            formatted_result.purchase_name = results.EntityRef.name;
+            formatted_result.purchase_category = "None";
 
             // Initially the purchase category is set to None, as it is not always present in the results.
             // Now, check through the line field for the purchase category. It exists in the AccountBasedExpenseLineDetail field.
@@ -322,7 +275,6 @@ export async function find_purchase(id: string, format_result: boolean) {
                     break;
                 }
             }
-
         }
 
         // Return the formatted results.
@@ -393,4 +345,30 @@ export async function update_purchase(new_account_id: string, new_account_name: 
         // Return any caught errors.
         return JSON.stringify(error);
     }
+}
+
+
+function create_query_result(success: boolean, results: any) {
+    // Create a formatted result object with all fields set to null.
+    let QueryResult: QueryResult = {
+        result: "",
+        message: "",
+        detail: "",
+    };
+
+    // Fill the first value in the array with the success or error message.
+    if (success) {
+        // Set the query result to indicate success and provide a success message and detail.
+        QueryResult.result = "Success";
+        QueryResult.message = "Accounts found successfully.";
+        QueryResult.detail = "The account objects were found successfully.";
+    } else {
+        // Set the query result to indicate failure and provide a error message and detail.
+        QueryResult.result = "Error",
+            QueryResult.message = results.Error[0].Message;
+        QueryResult.detail = results.Error[0].Detail;
+    }
+
+    // Return the formatted query result.
+    return QueryResult;
 }
