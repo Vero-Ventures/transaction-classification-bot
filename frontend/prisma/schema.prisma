@@ -14,4 +14,7 @@ datasource db {
 model User {
   id    Int    @id @default(autoincrement())
   email String @unique
+  profileComplete Boolean @default(false)
+  industry String
+  receiveEmails Boolean @default(false)
 }
