@@ -1,5 +1,5 @@
 const QB = require('node-quickbooks');
-import { find_purchase } from "../server_actions/app";
+import { find_purchase } from "../../../../actions/quickbooks";
 
 export async function GET() {
     // *** TESTING ID AND FORMATTING BOOLEAN ***

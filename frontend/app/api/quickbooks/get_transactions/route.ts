@@ -1,5 +1,5 @@
 const QB = require('node-quickbooks');
-import { get_transactions } from "../server_actions/app";
+import { get_transactions } from "../../../../actions/quickbooks";
 
 export async function GET() {
     // Call server action to find accounts and return them.

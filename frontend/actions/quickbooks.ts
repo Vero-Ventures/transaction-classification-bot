@@ -6,37 +6,19 @@ import { Transaction } from "@/types/Transaction";
 import { Account } from "@/types/Account";
 import { Purchase } from "@/types/Purchase";
 import { QueryResult } from "@/types/QueryResult";
+import { create_qb_object } from "@/actions/qb_client";
 const QB = require('node-quickbooks');
 
 
 // Get all accounts from the QuickBooks API.
 export async function get_accounts() {
 
-    // Get the server session and save it as a constant.
-    const session = await getServerSession(options);
-
-    // Record the server session values.
-    const oauthToken = session?.accessToken;
-    const realmId = session?.realmId;
-    const refreshToken = session?.refreshToken;
-
     // Try to get all account objects from the API.
     // Catches any errors that occur and returns them as a response.
     try {
 
         // Create the QuickBooks API calls object.
-        const qbo = new QB(
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET,
-            oauthToken,
-            false,
-            realmId,
-            true,
-            true,
-            null,
-            '2.0',
-            refreshToken,
-        );
+        const qbo = await create_qb_object();
 
         // Create tracker to indicate if the query was successful or not.
         let success = true;
@@ -98,31 +80,12 @@ export async function get_accounts() {
 // Get all transactions from the QuickBooks API.
 export async function get_transactions() {
 
-    // Get the server session and save it as a constant.
-    const session = await getServerSession(options);
-
-    // Record the server session values.
-    const oauthToken = session?.accessToken;
-    const realmId = session?.realmId;
-    const refreshToken = session?.refreshToken;
-
     // Try to get all purchase transaction objects from the API.
     // Catches any errors that occur and returns them as a response.
     try {
 
         // Create the QuickBooks API calls object.
-        const qbo = new QB(
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET,
-            oauthToken,
-            false,
-            realmId,
-            true,
-            true,
-            null,
-            '2.0',
-            refreshToken,
-        );
+        const qbo = await create_qb_object();
 
         // Create tracker to indicate if the query was successful or not.
         let success = true;
@@ -188,31 +151,12 @@ export async function get_transactions() {
 // Find a specific purchase object by its ID.
 export async function find_purchase(id: string, format_result: boolean) {
 
-    // Get the server session and save it as a constant.
-    const session = await getServerSession(options);
-
-    // Record the server session values.
-    const oauthToken = session?.accessToken;
-    const realmId = session?.realmId;
-    const refreshToken = session?.refreshToken;
-
     // Try to get a specific purchase object from the API by its ID. 
     // Catches any errors that occur and returns them as a response.
     try {
 
         // Create the QuickBooks API calls object.
-        const qbo = new QB(
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET,
-            oauthToken,
-            false,
-            realmId,
-            true,
-            true,
-            null,
-            '2.0',
-            refreshToken,
-        );
+        const qbo = await create_qb_object();
 
         // Create tracker to indicate if the query was successful or not.
         let success = true;
@@ -288,31 +232,13 @@ export async function find_purchase(id: string, format_result: boolean) {
 
 // Update a specific purchase object passed to the function.
 export async function update_purchase(new_account_id: string, new_account_name: string, purchase: any) {
-    // Get the server session and save it as a constant.
-    const session = await getServerSession(options);
-
-    // Record the server session values.
-    const oauthToken = session?.accessToken;
-    const realmId = session?.realmId;
-    const refreshToken = session?.refreshToken;
 
     // Try to update a specific purchase object from the API.
     // Catches any errors that occur and returns them as a response.
     try {
 
         // Create the QuickBooks API calls object.
-        const qbo = new QB(
-            process.env.CLIENT_ID,
-            process.env.CLIENT_SECRET,
-            oauthToken,
-            false,
-            realmId,
-            true,
-            true,
-            null,
-            '2.0',
-            refreshToken,
-        );
+        const qbo = await create_qb_object();
 
         // Create a copy of the purchase object to hold the updated purchase.
         const update_purchase = purchase;
@@ -350,7 +276,7 @@ export async function update_purchase(new_account_id: string, new_account_name: 
 
 function create_query_result(success: boolean, results: any) {
     // Create a formatted result object with all fields set to null.
-    let QueryResult: QueryResult = {
+    const QueryResult: QueryResult = {
         result: "",
         message: "",
         detail: "",
@@ -365,7 +291,7 @@ function create_query_result(success: boolean, results: any) {
     } else {
         // Set the query result to indicate failure and provide a error message and detail.
         QueryResult.result = "Error",
-            QueryResult.message = results.Error[0].Message;
+        QueryResult.message = results.Error[0].Message;
         QueryResult.detail = results.Error[0].Detail;
     }
 
