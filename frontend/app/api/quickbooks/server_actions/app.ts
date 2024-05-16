@@ -2,6 +2,10 @@
 
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
+import { Transaction } from "@/types/Transaction";
+import { Account } from "@/types/Account";
+import { Purchase } from "@/types/Purchase";
+import { QueryResult } from "@/types/QueryResult";
 const QB = require('node-quickbooks');
 
 
@@ -58,39 +62,46 @@ export async function get_accounts() {
         // Create an array to hold the accounts.
         const formatted_accounts = [];
 
+        // Create a formatted result object with all fields set to null.
+        let QueryResult: QueryResult = {
+            result: "",
+            message: "",
+            detail: "",
+        };
+
         // Fill the first value in the array with the success or error message.
         if (success) {
-            // Add the success message.
-            formatted_accounts.push({
-                result: "Success",
-                message: "Accounts found successfully.",
-                detail: "The account objects were found successfully."
-            })
+            // Set the query result to indicate success and provide a success message and detail.
+            QueryResult.result = "Success";
+            QueryResult.message = "Accounts found successfully.";
+            QueryResult.detail = "The account objects were found successfully.";
         } else {
-            // Add the error message with values from the response.
-            formatted_accounts.push({
-                result: "Error",
-                message: results.Error[0].Message,
-                detail: results.Error[0].Detail
-            })
+            // Set the query result to indicate failure and provide a error message and detail.
+            QueryResult.result = "Error",
+            QueryResult.message = results.Error[0].Message;
+            QueryResult.detail = results.Error[0].Detail;
+            
         }
+
+        // Add the formatted result to the start of accounts array as error indication.
+        formatted_accounts.push(QueryResult)
 
 
         // For each account object, remove unnecessary fields and delete any inactive accounts.
         for (let account = 0; account < results.length; account++) {
             // Only add active accounts
             if (results[account].Active) {
-                // Add the account to the accounts array.
-                formatted_accounts.push({
+                // Create a formatted account object with the necessary fields.
+                const new_formatted_account: Account = ({
                     id: results[account].Id,
                     name: results[account].Name,
                     active: results[account].Active,
                     classification: results[account].Classification,
                     account_type: results[account].AccountType,
                     account_sub_type: results[account].AccountSubType,
-                    description: results[account].Description,
-                    account_number: results[account].AcctNum
                 });
+                // Add the account to the accounts array.
+                formatted_accounts.push(new_formatted_account);
             }
         }
 
