@@ -1,5 +1,6 @@
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
+import { Transaction } from "@/types/Transaction";
 const QB = require('node-quickbooks');
 
 export async function GET() {
@@ -79,7 +80,7 @@ export async function GET() {
             // Skip any inactive accounts by checking active value before recording the transactions.
             if (purchase_transactions.includes(results[account].ColData[1].value) && results[account].ColData[2].value !== "") {
                 // Add a new formatted transaction to the array.
-                formatted_transactions.push({
+                let newTransaction: Transaction = {
                     date: results[account].ColData[0].value,
                     transaction_type: results[account].ColData[1].value,
                     transaction_ID: results[account].ColData[1].id,
@@ -87,7 +88,8 @@ export async function GET() {
                     account: results[account].ColData[3].value,
                     category: results[account].ColData[4].value,
                     amount: results[account].ColData[5].value
-                });
+                };
+                formatted_transactions.push(newTransaction)
             }
         }   
         

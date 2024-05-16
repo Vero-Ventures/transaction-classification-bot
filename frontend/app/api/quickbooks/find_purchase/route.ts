@@ -1,6 +1,7 @@
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth";
 const QB = require('node-quickbooks');
+import { Purchase } from "@/types/Purchase";
 
 export async function GET() {
 
@@ -51,7 +52,7 @@ export async function GET() {
         });
 
         // Create a formatted result object with all fields set to null.
-        let formatted_result = {
+        let formatted_result: Purchase = {
             result_info: {
                 result: "",
                 message: "",
