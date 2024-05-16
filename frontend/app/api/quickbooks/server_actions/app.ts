@@ -405,9 +405,8 @@ export async function get_purchases() {
             });
         });
 
-        return JSON.stringify(resp.QueryResponse.Purchase);
+        return resp.QueryResponse.Purchase;
     } catch (error) {
         console.error(error);
-        return JSON.stringify(error);
     }
 }
