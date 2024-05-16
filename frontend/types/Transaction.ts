@@ -11,7 +11,7 @@ export type Transaction = {
   // amount: Decimal as a string.
   amount: string;
 };
-  
+
 export type CategorizedResult = {
   // transaction_ID: Integer as a string.
   transaction_ID: string;

@@ -101,7 +101,7 @@ export default function TransactionsPage() {
           Test
         </button>
       </div>
-      <div className='mb-8'>
+      <div className="mb-8">
         <h2 className="text-xl font-bold mb-2">Response</h2>
         <pre className="border border-gray-300 rounded p-2">{response}</pre>
       </div>
