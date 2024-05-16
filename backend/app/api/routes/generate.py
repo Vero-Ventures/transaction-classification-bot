@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from pydantic import BaseModel
 from api.dependencies import check_key
-import torch
 import asyncio
 
 

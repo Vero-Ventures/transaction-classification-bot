@@ -21,17 +21,17 @@ The primary language will be Python, utilizing libraries and frameworks for:
 
 - **Programming Language:** Python
 - **Libraries:**
-    - PyTorch for deep learning
-    - Pandas for data manipulation
-    - Other machine learning and data science libraries as needed
+  - PyTorch for deep learning
+  - Pandas for data manipulation
+  - Other machine learning and data science libraries as needed
 - **APIs:**
-    - QuickBooks Online API
-    - Xero Accounting API (if applicable)
+  - QuickBooks Online API
+  - Xero Accounting API (if applicable)
 - **Tools:**
-    - Integrated Development Environment (IDE)
-    - Code interpreter
-    - Web browser
-    - DevOps tooling for CI/CD (continuous integration and deployment)
+  - Integrated Development Environment (IDE)
+  - Code interpreter
+  - Web browser
+  - DevOps tooling for CI/CD (continuous integration and deployment)
 - **Computational Resources:** Local AI/ML server with high computational power for training, development, and deploying the model.
 
 ## **Current Work/Arrangement**

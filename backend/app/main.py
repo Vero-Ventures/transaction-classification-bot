@@ -1,7 +1,6 @@
 import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from llm.loader import model_lifespan
 import os
 from dotenv import load_dotenv
