@@ -44,7 +44,7 @@ export default function Page() {
           <p className="text-center font-display font-bold text-4xl md:text-5xl mb-16 mt-12 md:mb-12">Transaction Classification</p>
           <p className="text-center font-display font-bold opacity-80 md:text-xl mb-8">{subTitle}</p>
           <div id="buttonsContainer" className="flex justify-evenly w-full mb-8 mt-8 sm:mt-0">
-            <button id="logIn" onClick={handleQuickBooksSignIn} className="bloc border-[#000000] border-2 bg-[#E5E5E5] text-lg rounded-md focus:outline-none text-md transition-all duration-300 hover:opacity-80 px-4 py-4 cursor-not-allowed">{buttonText}</button>
+            <button id="logIn" onClick={handleQuickBooksSignIn} className="bloc border-[#000000] border-2 bg-[#E5E5E5] text-lg rounded-md focus:outline-none text-md transition-all duration-300 hover:opacity-80 px-4 py-4">{buttonText}</button>
           </div>
         </div>
       </div>
