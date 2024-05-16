@@ -10,7 +10,7 @@ exceptiongroup==1.2.0
 fastapi==0.110.0
 filelock==3.13.3
 fsspec==2024.3.1
-gunicorn==21.2.0
+gunicorn==22.0.0
 h11==0.14.0
 httptools==0.6.1
 huggingface-hub==0.22.2

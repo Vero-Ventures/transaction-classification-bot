@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import {signIn, getSession} from 'next-auth/react';
 import { get } from "http";
 
+
 export default function Page() {
   const [subTitle, setSubTitle] = useState<string>('Please sign in to your Intuit account and select your company.');
   const [buttonText, setButtonText] = useState<string>('Intuit Sign-In');
