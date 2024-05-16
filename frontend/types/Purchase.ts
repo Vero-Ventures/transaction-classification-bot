@@ -5,7 +5,7 @@ export type Purchase = {
         message: string;
         detail: string;
     },
-    // Integer as a string.
+    // id: Integer as a string.
     id: string;
     // purchase_type: 'Check' | 'Cash Expense' | 'Credit Card Expense';
     purchase_type: string;
