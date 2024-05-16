@@ -273,6 +273,52 @@ export async function update_purchase(new_account_id: string, new_account_name: 
     }
 }
 
+// Find a the company info object and return the industry.
+export async function find_industry() {
+
+    // Try to get the company info object from the API to get the user's industry. 
+    // Catches any errors that occur and returns them as a response.
+    try {
+
+        // Create the QuickBooks API calls object.
+        const qbo = await create_qb_object();
+
+        // Create tracker to indicate if the query was successful or not.
+        let success = true;
+
+        // Search for any company info objects.
+        const response: any = await new Promise((resolve, reject) => {
+            qbo.findCompanyInfos((err: Error, data: any) => {
+                // If there is an error, check if it has a 'Fault' property 
+                // Then resolve the error to allow a formatted JSON error message to be passed to the caller.
+                if (err && 'Fault' in err) {
+                    success = false;
+                    resolve(err.Fault);
+                }
+                // If there is no error, resolve the data to allow the caller to access the results.
+                resolve(data);
+            });
+        });
+
+        // Get array containing the industry type data.
+        const company_name_value_array = response.QueryResponse.CompanyInfo[0].NameValue;
+        
+        // Iterate through the array to find the industry type.
+        for (let i = 0; i < company_name_value_array.length; i++) {
+            // If the industry type is found, return it.
+            if (company_name_value_array[i].Name === "QBOIndustryType" || company_name_value_array[i].Name === "IndustryType") {
+                return company_name_value_array[i].Value;
+            }
+        }
+
+        // Return none, if not match was found.
+        return "None"
+
+    } catch (error) {
+        // Return error if the call fails.
+        return "Error";
+    }
+}
 
 function create_query_result(success: boolean, results: any) {
     // Create a formatted result object with all fields set to null.
