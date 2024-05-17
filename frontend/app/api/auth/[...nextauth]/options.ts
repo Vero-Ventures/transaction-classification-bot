@@ -72,6 +72,7 @@ export const options: NextAuthOptions = {
       // console.log("Account info:", account);
       // console.log("Profile data from provider:", profile);
       const email = user.email;
+      const [first_name, last_name] = user.name?.split(' ') ?? [];
       if (email) {
         const userData = await prisma.user.findUnique({
           where: { email },
@@ -84,12 +85,11 @@ export const options: NextAuthOptions = {
           await prisma.user.create({
             data: {
               email,
-              first_name: profile?.givenName,
-              last_name: profile?.familyName,
+              first_name: first_name,
+              last_name: last_name,
               industry: '',
             },
           });
-          (user as any).profileComplete = false;
           console.log(`New user created in db: ${user}`);
         }
       }
