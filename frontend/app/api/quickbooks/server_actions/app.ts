@@ -1,8 +1,6 @@
 'use server'
 
 import { options } from "@/app/api/auth/[...nextauth]/options";
-import { QuickBooksResponse } from "@/interfaces/response";
-import { createQuickBooksClient } from "@/utils/qb-client";
 import { getServerSession } from "next-auth";
 const QB = require('node-quickbooks');
 
@@ -377,36 +375,5 @@ export async function update_purchase(new_account_id: string, new_account_name: 
     } catch (error) {
         // Return any caught errors.
         return JSON.stringify(error);
-    }
-}
-
-export async function get_purchases() {
-    const session = await getServerSession(options);
-
-    const oauthToken = session?.accessToken;
-    const realmId = session?.realmId;
-    const refreshToken = session?.refreshToken;
-
-    try {
-        const qbo = createQuickBooksClient(
-            process.env.CLIENT_ID || '',
-            process.env.CLIENT_SECRET || '',
-            oauthToken || '',
-            realmId || '',
-            refreshToken || ''
-        );
-
-        const resp: QuickBooksResponse = await new Promise((resolve, reject) => {
-            qbo.findPurchases('', (err: Error, data: QuickBooksResponse) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(data);
-            });
-        });
-
-        return resp.QueryResponse.Purchase;
-    } catch (error) {
-        console.error(error);
     }
 }
