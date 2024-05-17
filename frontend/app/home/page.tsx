@@ -3,14 +3,14 @@
 import SelectionPage from "@/app/home/selection";
 import ReviewPage from "@/app/home/review";
 import { useEffect, useState } from "react";
-import { get_transactions } from "../api/quickbooks/server_actions/app";
 import { filterCategorized, filterUncategorized } from "@/utils/filter-transactions";
 import { classifyTransactions } from "@/actions/classify";
 import { Transaction } from "@/types/Transaction";
+import { get_transactions } from "@/actions/quickbooks";
 
 export default function HomePage() {
   const [purchases, setPurchases] = useState<Transaction[]>([]);
-  const [categorizedResults, setCategorizedResults] = useState<any>({});
+  const [categorizedResults, setCategorizedResults] = useState<{ [transaction_ID: string]: string[] }>({});
   const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -31,16 +31,12 @@ export default function HomePage() {
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
     const categorizedOnly: Transaction[] = filterCategorized(purchases);
-    const result = await classifyTransactions(categorizedOnly, filterUncategorized(selectedPurchases));
-    
-    if (result.data) {
-      const classifications: any = {};
-      result.data.forEach((classification) => {
-        classifications[classification.transaction_ID] = classification.possibleCategories;
-      });
-      
-      setCategorizedResults(classifications);
+    const result: { [transaction_ID: string]: string[] } | { error: string }= await classifyTransactions(categorizedOnly, filterUncategorized(selectedPurchases));
+    if (result.error) {
+      console.error('Error classifying transactions:', result.error);
+      return;
     }
+    setCategorizedResults(result as { [transaction_ID: string]: string[] });
   };
 
   return (
