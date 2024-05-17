@@ -1,7 +1,7 @@
 "use client";
 
-import SelectionPage from "@/app/home/selection";
-import ReviewPage from "@/app/home/review";
+import SelectionPage from "@/components/selection";
+import ReviewPage from "@/components/review";
 import { useEffect, useState } from "react";
 import { filterCategorized, filterUncategorized } from "@/utils/filter-transactions";
 import { classifyTransactions } from "@/actions/classify";
