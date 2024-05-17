@@ -90,4 +90,4 @@ export default function ReviewPage({ selectedPurchases, categorizedResults }: { 
             </div>
         </div>
     );
-};
+}
