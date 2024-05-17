@@ -61,17 +61,23 @@ export default function ReviewPage({ selectedPurchases, categorizedResults }: { 
                                         {purchase.name}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        <select
-                                            value={selectedCategories[purchase.transaction_ID]}
-                                            onChange={(e) => handleCategoryChange(purchase.transaction_ID, e.target.value)}
-                                            className="border border-gray-700 rounded-lg px-2 py-1"
-                                        >
-                                            {categorizedResults[purchase.transaction_ID]?.map((category, index) => (
-                                                <option key={index} value={category}>
-                                                    {category}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        {
+                                            selectedCategories[purchase.transaction_ID] ? (
+                                                <select
+                                                    value={selectedCategories[purchase.transaction_ID]}
+                                                    onChange={(e) => handleCategoryChange(purchase.transaction_ID, e.target.value)}
+                                                    className="border border-gray-700 rounded-lg px-2 py-1"
+                                                >
+                                                    {categorizedResults[purchase.transaction_ID]?.map((category, index) => (
+                                                        <option key={index} value={category}>
+                                                            {category}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <span className="text-red-500">No Matches Found</span>
+                                            )
+                                        }
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
                                         {formatPrice(purchase.amount)}
