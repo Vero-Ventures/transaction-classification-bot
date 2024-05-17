@@ -1,21 +1,13 @@
-import { queryLLM } from "@/lib/llm";
+import { queryLLM } from "@/actions/llm";
 
 export async function POST(req: Request, res: Response) {
-    const url = new URL(req.url || '');
-
     const body = await req.json();
-    const name = body.name || '';
-    const query = body.query || 'In 1-2 words, what type of business is ' + body.name + '?';
-    const context = body.context || '';
-
-    // console.log('name', name);
-    // console.log('query', query);
-    // console.log('context', context);
+    const name = body.name;
+    const query = body.query;
+    const context = body.context;
 
     try {
-        const response = await queryLLM(query, context);
-
-        // console.log('response', response);
+        const response = await queryLLM(query, context, name);
 
         return Response.json(
             response, 

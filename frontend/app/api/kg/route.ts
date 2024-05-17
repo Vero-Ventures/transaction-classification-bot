@@ -1,4 +1,4 @@
-import { fetchKnowledgeGraph } from "@/lib/knowledgegraph";
+import { fetchKnowledgeGraph } from "@/actions/knowledgegraph";
 
 export async function GET(req: Request, res: Response) {
     const url = new URL(req.url || '');

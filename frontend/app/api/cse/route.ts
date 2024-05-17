@@ -1,4 +1,4 @@
-import { fetchCustomSearch } from "@/lib/customsearch";
+import { fetchCustomSearch } from "@/actions/customsearch";
 
 export async function GET(req: Request, res: Response) {
     const url = new URL(req.url || '');
