@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { Purchase } from "@/interfaces/purchase";
 import { formatDate } from "@/utils/format-date";
 import { formatPrice } from "@/utils/format-price";
+import { Transaction } from "@/types/Transaction";
 
-export default function ReviewPage({ selectedPurchases, categorizedResults }: { selectedPurchases: Purchase[], categorizedResults: Record<string, string[]> }) {
+export default function ReviewPage({ selectedPurchases, categorizedResults }: { selectedPurchases: Transaction[], categorizedResults: Record<string, string[]> }) {
     const [selectedCategories, setSelectedCategories] = useState<Record<string, string>>({});
 
     useEffect(() => {
         const initialCategories: Record<string, string> = {};
         selectedPurchases.forEach((purchase) => {
-            const firstCategory = categorizedResults[purchase.Id]?.[0];
+            const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
             if (firstCategory) {
-                initialCategories[purchase.Id] = firstCategory;
+                initialCategories[purchase.transaction_ID] = firstCategory;
             }
         });
         setSelectedCategories(initialCategories);
@@ -43,7 +43,6 @@ export default function ReviewPage({ selectedPurchases, categorizedResults }: { 
                             <tr>
                                 <th className="px-4 py-2 text-gray-500 text-start">Date</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Type</th>
-                                <th className="px-4 py-2 text-gray-500 text-start">No.</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Payee</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Category</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Total</th>
@@ -53,24 +52,21 @@ export default function ReviewPage({ selectedPurchases, categorizedResults }: { 
                             {selectedPurchases.map((purchase, index) => (
                                 <tr key={index}>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {formatDate(purchase.TxnDate) || '-'}
+                                        {formatDate(purchase.date)}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.PaymentType || '-'}
+                                        {purchase.transaction_type}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.DocNumber || '-'}
-                                    </td>
-                                    <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.EntityRef?.name || '-'}
+                                        {purchase.name}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
                                         <select
-                                            value={selectedCategories[purchase.Id] || ''}
-                                            onChange={(e) => handleCategoryChange(purchase.Id, e.target.value)}
+                                            value={selectedCategories[purchase.transaction_ID]}
+                                            onChange={(e) => handleCategoryChange(purchase.transaction_ID, e.target.value)}
                                             className="border border-gray-700 rounded-lg px-2 py-1"
                                         >
-                                            {categorizedResults[purchase.Id]?.map((category, index) => (
+                                            {categorizedResults[purchase.transaction_ID]?.map((category, index) => (
                                                 <option key={index} value={category}>
                                                     {category}
                                                 </option>
@@ -78,7 +74,7 @@ export default function ReviewPage({ selectedPurchases, categorizedResults }: { 
                                         </select>
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {formatPrice(purchase.TotalAmt) || '-'}
+                                        {formatPrice(purchase.amount)}
                                     </td>
                                 </tr>
                             ))}

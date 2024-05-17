@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { formatPrice } from '@/utils/format-price';
 import { formatDate } from '@/utils/format-date';
-import { Purchase } from '@/interfaces/purchase';
-import { get_purchases } from '../api/quickbooks/server_actions/app';
-import { filterPurchases } from '@/utils/filter-uncategorized-purchases';
+import { Transaction } from '@/types/Transaction';
 
 export default function SelectionPage({
     purchases,
@@ -11,10 +9,10 @@ export default function SelectionPage({
     selectedPurchases,
     setSelectedPurchases
 }: {
-    purchases: Purchase[];
-    handleSubmit: (selectedPurchases: Purchase[]) => void;
-    selectedPurchases: Purchase[];
-    setSelectedPurchases: (selectedPurchases: Purchase[]) => void;
+    purchases: Transaction[];
+    handleSubmit: (selectedPurchases: Transaction[]) => void;
+    selectedPurchases: Transaction[];
+    setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
 }) {
     
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -29,14 +27,14 @@ export default function SelectionPage({
         }
     };
 
-    const selectRow = (purchase: Purchase) => {
+    const selectRow = (purchase: Transaction) => {
         const isSelected = selectedPurchases.some(
-            selectedPurchase => selectedPurchase.Id === purchase.Id
+            selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID
         );
         if (isSelected) {
             setSelectedPurchases(
                 selectedPurchases.filter(
-                    selectedPurchase => selectedPurchase.Id !== purchase.Id
+                    selectedPurchase => selectedPurchase.transaction_ID !== purchase.transaction_ID
                 )
             );
         } else {
@@ -56,12 +54,12 @@ export default function SelectionPage({
     const sortedPurchases = [...purchases].sort((a, b) => {
         if (sortColumn === 'Date') {
             return sortOrder === 'asc'
-                ? new Date(a.TxnDate).getTime() - new Date(b.TxnDate).getTime()
-                : new Date(b.TxnDate).getTime() - new Date(a.TxnDate).getTime();
+                ? new Date(a.date).getTime() - new Date(b.date).getTime()
+                : new Date(b.date).getTime() - new Date(a.date).getTime();
         } else if (sortColumn === 'Total') {
             return sortOrder === 'asc'
-                ? a.TotalAmt - b.TotalAmt
-                : b.TotalAmt - a.TotalAmt;
+                ? a.amount - b.amount
+                : b.amount - a.amount;
         }
         return 0;
     });
@@ -97,7 +95,6 @@ export default function SelectionPage({
                                     </button>
                                 </th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Type</th>
-                                <th className="px-4 py-2 text-gray-500 text-start">No.</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Payee</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">Category</th>
                                 <th className="px-4 py-2 text-gray-500 text-start">
@@ -117,41 +114,31 @@ export default function SelectionPage({
                                 <tr
                                     key={index}
                                     onClick={() => selectRow(purchase)}
-                                    className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.Id === purchase.Id) ? 'bg-blue-100' : ''}`}>
+                                    className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID) ? 'bg-blue-100' : ''}`}>
                                     <td className="px-4 py-2 text-center">
                                         <input
                                             type="checkbox"
                                             checked={selectedPurchases.some(
-                                                selectedPurchase => selectedPurchase.Id === purchase.Id
+                                                selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID
                                             )}
                                             onChange={() => selectRow(purchase)}
                                             onClick={e => e.stopPropagation()}
                                         />
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {formatDate(purchase.TxnDate) || '-'}
+                                        {formatDate(purchase.date)}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.PaymentType || '-'}
+                                        {purchase.transaction_type}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.DocNumber || '-'}
+                                        {purchase.name}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.EntityRef?.name || '-'}
+                                        {purchase.category}
                                     </td>
                                     <td className="px-4 py-2 font-medium text-gray-800">
-                                        {purchase.Line.map((lineItem, index) => (
-                                            <span key={index}>
-                                                {lineItem.AccountBasedExpenseLineDetail?.AccountRef
-                                                    .name ||
-                                                    lineItem.ItemBasedExpenseLineDetail?.ItemRef.name}
-                                                {index < purchase.Line.length - 1 && ', '}
-                                            </span>
-                                        ))}
-                                    </td>
-                                    <td className="px-4 py-2 font-medium text-gray-800">
-                                        {formatPrice(purchase.TotalAmt) || '-'}
+                                        {formatPrice(purchase.amount)}
                                     </td>
                                 </tr>
                             ))}
