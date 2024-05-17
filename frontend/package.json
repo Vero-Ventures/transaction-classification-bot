@@ -8,22 +8,19 @@
     "start": "next start",
     "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}'",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css}'",
-    "insert": "node data/indexTypeSense.js",
     "prepare": "",
     "postinstall": "node scripts/fix-jose.js"
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
-    "dotenv": "^16.4.5",
+    "fuse.js": "^7.0.0",
+    "googleapis": "^137.1.0",
     "intuit-oauth": "^4.1.2",
     "next": "14.2.3",
     "next-auth": "^4.24.7",
     "node-quickbooks": "^2.0.45",
     "react": "^18",
-    "react-dom": "^18",
-    "react-instantsearch": "^7.7.3",
-    "typesense": "^1.8.2",
-    "typesense-instantsearch-adapter": "^2.8.0"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",
