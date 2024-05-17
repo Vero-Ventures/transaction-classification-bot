@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
-import { get } from 'http';
 
 export default function Page() {
   const [subTitle, setSubTitle] = useState<string>(
