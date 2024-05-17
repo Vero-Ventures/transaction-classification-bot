@@ -6,7 +6,7 @@ export type Transaction = {
   name: string;
   account: string;
   category: string;
-  amount: string;
+  amount: number;
 };
 
 export type CategorizedResult = {
