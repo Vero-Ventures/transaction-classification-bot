@@ -8,21 +8,60 @@ const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
 
 const basePrompt = 'Given a list of categories, What type of business expense would a transaction from $NAME be? Categorys: $CATEGORYS';
-const categorys = `Advertising, Automobile, Fuel, Bank Charges, Commission & fees, Disposal Fees, Dues & Subscriptions, \
-Equipment Rental, Insurance, Workers Compensation, Job Expenses, Cost of Labour, Installation, Maintenance and Repairs, \
-Equipment Rental, Job Materials, Permits, Legal & Professional Fees, Accounting, Bookkeeper, Lawyer, Maintenance and Repair, \
-Building Repairs, Computer Repairs, Equipment Repairs, Meals and Entertainment, Office Expenses, Promotional, Purchases, \
-Rent or Lease, Stationary & Printing, Supplies, Taxes & Licenses, Unapplied Cash Bill Payment Expense, Uncategorized Expense, \
-Utilities, Gas and Electric, Telephone, Depreciation, Miscellaneous, Penalties & Settlements`;
+const defaultCategorys = [
+  'Advertising',
+  'Automobile',
+  'Fuel',
+  'Bank Charges',
+  'Commission & fees',
+  'Disposal Fees',
+  'Dues & Subscriptions',
+  'Equipment Rental',
+  'Insurance',
+  'Workers Compensation',
+  'Job Expenses',
+  'Cost of Labour',
+  'Installation',
+  'Maintenance and Repairs',
+  'Equipment Rental',
+  'Job Materials',
+  'Permits',
+  'Legal & Professional Fees',
+  'Accounting',
+  'Bookkeeper',
+  'Lawyer',
+  'Maintenance and Repair',
+  'Building Repairs',
+  'Computer Repairs',
+  'Equipment Repairs',
+  'Meals and Entertainment',
+  'Office Expenses',
+  'Promotional',
+  'Purchases',
+  'Rent or Lease',
+  'Stationary & Printing',
+  'Supplies',
+  'Taxes & Licenses',
+  'Unapplied Cash Bill Payment Expense',
+  'Uncategorized Expense',
+  'Utilities',
+  'Gas and Electric',
+  'Telephone',
+  'Depreciation',
+  'Miscellaneous',
+  'Penalties & Settlements'
+]
 
-export async function queryLLM(query: string, context: string, name?: string) {
+export async function queryLLM(query: string, context: string, name?: string, categorys?: string[]) {
 
   if (!context) {
     throw new Error('Context is required');
   }
 
   if (!query && name) {
-    query = basePrompt.replace('$NAME', name).replace('$CATEGORYS', categorys);
+    categorys = categorys || defaultCategorys;
+    query = basePrompt.replace('$NAME', name).replace('$CATEGORYS', categorys.join(', '));
+    console.log('Query:', query);
   } else if (!query) {
     throw new Error('Query or name is required');
   }
@@ -49,11 +88,12 @@ export async function queryLLM(query: string, context: string, name?: string) {
 }
 
 
-export async function batchQueryLLM(transactions: Transaction[]) {
+export async function batchQueryLLM(transactions: Transaction[], categorys?: string[]) {
   const threshold = 100;
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
-    const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORYS', categorys);
+    categorys = categorys || defaultCategorys;
+    const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORYS', categorys.join(', '));
 
     // Fetch detailed descriptions from the Knowledge Graph API
     const kgResults = await fetchKnowledgeGraph(transaction.name) || [];
