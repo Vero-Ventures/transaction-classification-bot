@@ -1,7 +1,7 @@
 import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
-import prisma from "@/lib/db";
+import prisma from '@/lib/db';
 
 export const options: NextAuthOptions = {
   providers: [
@@ -40,7 +40,6 @@ export const options: NextAuthOptions = {
     },
   ],
   callbacks: {
-    
     async jwt({ token, account, profile }) {
       if (account) {
         token.userId = profile?.sub;
@@ -68,7 +67,7 @@ export const options: NextAuthOptions = {
       console.log(`session callback invoked`);
       return session;
     },
-    async signIn({user, account, profile}) {
+    async signIn({ user, account, profile }) {
       // console.log("User info:", user);
       // console.log("Account info:", account);
       // console.log("Profile data from provider:", profile);
@@ -77,42 +76,28 @@ export const options: NextAuthOptions = {
         const userData = await prisma.user.findUnique({
           where: { email },
         });
-        
+
         if (userData) {
           // Existing user, check if profile is complete
-          if (userData.profileComplete) {
-            // Attach a custom property or handle accordingly
-            console.log(`This login user has completed profile: ${JSON.stringify(user)}`);
-          }
         } else {
           // New user, presumably profile is not complete
           await prisma.user.create({
             data: {
               email,
+              first_name: profile?.givenName,
+              last_name: profile?.familyName,
               industry: '',
-              receiveEmails: false,
-              profileComplete: false,
             },
           });
           (user as any).profileComplete = false;
-          console.log(`New user created: ${user}`);
+          console.log(`New user created in db: ${user}`);
         }
       }
       console.log(`signIn callback invoked`);
       return true;
     },
-    async redirect({url, baseUrl}) {
-      console.log(`redirect callback invoked`);
-      if (!profileFlag) {
-        console.log(`url: ${url}, baseUrl: ${baseUrl}`);
-        console.log('Redirecting to:', '/complete-profile');
-        return '/complete-profile'; 
-      } else {
-        return url || baseUrl;
-      }
-    },
   },
   session: {
     maxAge: 24 * 60 * 60,
   },
-}
+};
