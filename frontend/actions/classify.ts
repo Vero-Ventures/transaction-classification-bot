@@ -1,5 +1,7 @@
 'use server';
 import { Transaction, CategorizedResult } from '@/types/Transaction';
+import { Account } from '@/types/Account';
+import { get_accounts } from '@/actions/quickbooks';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
@@ -7,6 +9,12 @@ export const classifyTransactions = async (
   uncategorizedTransactions: Transaction[]
 ) => {
   try {
+    const validCategoriesResponse = JSON.parse(await get_accounts());
+    const validCategories = validCategoriesResponse
+      .slice(1)
+      .map((category: Account) => category.name);
+    console.log(validCategories);
+
     if (!Array.isArray(categorizedTransactions)) {
       throw new Error('categorizedTransactions is not an array');
     }
@@ -27,7 +35,11 @@ export const classifyTransactions = async (
           matches.map(match => match.item.category)
         );
 
-        if (possibleCategoriesSet.size === 0) {
+        const validPossibleCategories = Array.from(
+          possibleCategoriesSet
+        ).filter(category => validCategories.includes(category));
+
+        if (validPossibleCategories.length === 0) {
           noMatches.push(uncategorized);
         } else {
           results.push({
@@ -48,7 +60,11 @@ export const classifyTransactions = async (
     if (noMatches.length > 0) {
       let llmApiResponse;
       try {
-        llmApiResponse = await sendToLLMApi(noMatches, categorizedTransactions);
+        llmApiResponse = await sendToLLMApi(
+          noMatches,
+          categorizedTransactions,
+          validCategories
+        );
         if (llmApiResponse && llmApiResponse.data) {
           llmApiResponse.data.forEach((llmResult: CategorizedResult) => {
             results.push({
@@ -62,20 +78,29 @@ export const classifyTransactions = async (
       }
     }
 
-    console.log('Successfully retrieved categorized transactions:', results);
-    return { message: 'Categorized Results returned', data: results };
+    const resultsObject = results.reduce(
+      (acc, curr) => {
+        acc[curr.transaction_ID] = curr.possibleCategories;
+        return acc;
+      },
+      {} as { [transaction_ID: string]: string[] }
+    );
+
+    console.log(
+      'Successfully retrieved categorized transactions:',
+      resultsObject
+    );
+    return resultsObject;
   } catch (error) {
     console.error('Error classifying transactions:', error);
-    return {
-      message: 'Error classifying uncategorized transaction:',
-      error: error,
-    };
+    return { error: 'Error getting categorized transactions:' };
   }
 };
 
 const sendToLLMApi = async (
   uncategorizedTransactions: Transaction[],
-  categorizedTransactions: Transaction[]
+  categorizedTransactions: Transaction[],
+  validCategories: string[]
 ) => {
   const response = await fetch(process.env.LLM_API_ENDPOINT as string, {
     method: 'POST',
@@ -85,6 +110,7 @@ const sendToLLMApi = async (
     body: JSON.stringify({
       uncategorizedTransactions,
       categorizedTransactions,
+      validCategories,
     }),
   });
 
