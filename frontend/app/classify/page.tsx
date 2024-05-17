@@ -39,7 +39,7 @@ const categorizedTransactions = [
     transaction_ID: '101',
     name: 'Grocery shopping',
     account: 'Cash',
-    category: 'Food',
+    category: 'Supplies',
     amount: '50.00',
   },
   {
@@ -48,7 +48,7 @@ const categorizedTransactions = [
     transaction_ID: '102',
     name: 'Dinner with friends',
     account: 'Credit Card',
-    category: 'Food',
+    category: 'Meals and Entertainment',
     amount: '80.00',
   },
   {
@@ -57,7 +57,7 @@ const categorizedTransactions = [
     transaction_ID: '103',
     name: 'Gas refill',
     account: 'Cash',
-    category: 'Transportation',
+    category: 'Fuel',
     amount: '40.00',
   },
 ];
