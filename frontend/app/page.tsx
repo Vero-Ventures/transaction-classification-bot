@@ -31,7 +31,7 @@ export default function Page() {
     // Sign in with QuickBooks and catch any errors.
     try {
       // Initiating authentication with QuickBooks provider and set the callback URL.
-      await signIn('quickbooks', { callbackUrl: '/test' });
+      await signIn('quickbooks', { callbackUrl: '/home' });
     } catch (error) {
       // Handle any errors, if necessary
       console.error('Error signing in with QuickBooks:', error);

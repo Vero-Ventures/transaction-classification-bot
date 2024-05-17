@@ -9,7 +9,7 @@ export type Transaction = {
   account: string;
   category: string;
   // amount: Decimal as a string.
-  amount: string;
+  amount: number;
 };
 
 export type CategorizedResult = {
