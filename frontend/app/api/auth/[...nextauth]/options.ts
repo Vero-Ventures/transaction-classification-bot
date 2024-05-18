@@ -2,7 +2,6 @@ import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
-import { find_industry } from '@/actions/quickbooks';
 
 export const options: NextAuthOptions = {
   providers: [
@@ -65,48 +64,44 @@ export const options: NextAuthOptions = {
       session.refreshToken = token.refreshToken;
       session.realmId = token.realmId;
       session.expiresAt = token.expiresAt;
-      console.log(`session callback invoked`);
-      // const email = session.user?.email ?? '';
-      // const industry = await find_industry();
-      // try{
-      //   await prisma.user.update({
-      //     where: { email },
-      //     data: { industry },
-      //   });
-      //   console.log(`User industry updated in db: ${industry}`);
-      // } catch (error) {
-      //   console.log(`Error updating user industry: ${error}`);
-      // }
       return session;
     },
     async signIn({ user, account, profile }) {
-      // console.log("User info:", user);
-      // console.log("Account info:", account);
-      // console.log("Profile data from provider:", profile);
-      const email = user.email;
-      const [first_name, last_name] = user.name?.split(' ') ?? [];
-      if (email) {
+      try {
+        const email = user.email;
+        const [first_name, last_name] = user.name?.split(' ') ?? [];
+
+        if (!email) {
+          console.error('No user email found in session');
+          return false; // Return false to indicate that sign-in failed
+        }
+
         const userData = await prisma.user.findUnique({
           where: { email },
         });
 
-        if (userData) {
-          // Existing user, check if profile is complete
-        } else {
-          // New user, presumably profile is not complete
-          await prisma.user.create({
-            data: {
-              email,
-              first_name: first_name,
-              last_name: last_name,
-              industry: '',
-            },
-          });
-          console.log(`New user created in db: ${user}`);
+        if (!userData) {
+          try {
+            await prisma.user.create({
+              data: {
+                email,
+                first_name: first_name,
+                last_name: last_name,
+                industry: '',
+              },
+            });
+            console.log(`New user created in db: ${user}`);
+          } catch (createError) {
+            console.error('Error creating new user in db:', createError);
+            return false; // Return false to indicate that sign-in failed
+          }
         }
+      } catch (error) {
+        console.error('Error during sign-in:', error);
+        return false; // Return false to indicate that sign-in failed
       }
-      console.log(`signIn callback invoked`);
-      return true;
+
+      return true; // Return true to indicate that sign-in was successful
     },
   },
   session: {

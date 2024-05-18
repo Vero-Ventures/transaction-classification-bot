@@ -1,7 +1,5 @@
-import { find_industry } from '@/actions/quickbooks';
 import { getServerSession } from 'next-auth';
 import { options } from '../auth/[...nextauth]/options';
-import { NextRequest } from 'next/server';
 
 export async function POST(req: Request) {
   const session = await getServerSession(options);
