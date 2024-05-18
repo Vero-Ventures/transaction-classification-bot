@@ -91,7 +91,10 @@ export async function queryLLM(query: string, context: string, name?: string, ca
 export async function batchQueryLLM(transactions: Transaction[], categories?: string[]) {
   const threshold = 100;
   categories = categories || defaultCategories;
-  categories = categories.map(category => category.toLowerCase());
+  const lowercaseCategoryMap = categories.reduce((map, category) => {
+    map[category.toLowerCase()] = category;
+    return map;
+  }, {} as { [key: string]: string });
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
     const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORIES', categories.join(', '));
@@ -125,12 +128,12 @@ export async function batchQueryLLM(transactions: Transaction[], categories?: st
 
     // Check if response contains a valid category from the list
     let possibleCategories: string[] = [];
-    
+
     if (response && response.response) {
-      possibleCategories = response.response
-        .split(',')
-        .map((category: string) => category.trim().toLowerCase())
-        .filter((category: string) => categories.includes(category));
+      const responseText = response.response.toLowerCase();
+      possibleCategories = Object.keys(lowercaseCategoryMap).filter(
+        category => responseText.includes(category)
+      ).map(category => lowercaseCategoryMap[category]);
     }
 
     results.push({
