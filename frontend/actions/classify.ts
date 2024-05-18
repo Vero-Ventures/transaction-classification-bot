@@ -61,10 +61,7 @@ export const classifyTransactions = async (
     if (noMatches.length > 0) {
       let llmApiResponse;
       try {
-        llmApiResponse = await sendToLLMApi(
-          noMatches,
-          validCategories
-        );
+        llmApiResponse = await sendToLLMApi(noMatches, validCategories);
         if (llmApiResponse) {
           llmApiResponse.forEach((llmResult: CategorizedResult) => {
             results.push({

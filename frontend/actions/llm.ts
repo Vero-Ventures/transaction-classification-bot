@@ -1,13 +1,14 @@
 'use server';
 
-import { Transaction, CategorizedResult } from "@/types/Transaction";
-import { fetchCustomSearch } from "./customsearch";
-import { fetchKnowledgeGraph } from "./knowledgegraph";
+import { Transaction, CategorizedResult } from '@/types/Transaction';
+import { fetchCustomSearch } from './customsearch';
+import { fetchKnowledgeGraph } from './knowledgegraph';
 
 const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
 
-const basePrompt = 'Given a list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
+const basePrompt =
+  'Given a list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
 const defaultCategories = [
   'Advertising',
   'Automobile',
@@ -49,18 +50,24 @@ const defaultCategories = [
   'Telephone',
   'Depreciation',
   'Miscellaneous',
-  'Penalties & Settlements'
-]
+  'Penalties & Settlements',
+];
 
-export async function queryLLM(query: string, context: string, name?: string, categories?: string[]) {
-
+export async function queryLLM(
+  query: string,
+  context: string,
+  name?: string,
+  categories?: string[]
+) {
   if (!context) {
     throw new Error('Context is required');
   }
 
   if (!query && name) {
     categories = categories || defaultCategories;
-    query = basePrompt.replace('$NAME', name).replace('$CATEGORIES', categories.join(', '));
+    query = basePrompt
+      .replace('$NAME', name)
+      .replace('$CATEGORIES', categories.join(', '));
     console.log('Query:', query);
   } else if (!query) {
     throw new Error('Query or name is required');
@@ -71,53 +78,61 @@ export async function queryLLM(query: string, context: string, name?: string, ca
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey
+        'x-api-key': apiKey,
       },
       body: JSON.stringify({
         prompt: query,
-        context: context
-      })
+        context: context,
+      }),
     });
 
     return response.json();
-
-
   } catch (error) {
     console.error('Error sending query:', error);
   }
 }
 
-
-export async function batchQueryLLM(transactions: Transaction[], categories?: string[]) {
+export async function batchQueryLLM(
+  transactions: Transaction[],
+  categories?: string[]
+) {
   const threshold = 100;
   categories = categories || defaultCategories;
-  const lowercaseCategoryMap = categories.reduce((map, category) => {
-    map[category.toLowerCase()] = category;
-    return map;
-  }, {} as { [key: string]: string });
+  const lowercaseCategoryMap = categories.reduce(
+    (map, category) => {
+      map[category.toLowerCase()] = category;
+      return map;
+    },
+    {} as { [key: string]: string }
+  );
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
-    const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORIES', categories.join(', '));
+    const prompt = basePrompt
+      .replace('$NAME', transaction.name)
+      .replace('$CATEGORIES', categories.join(', '));
 
     // Fetch detailed descriptions from the Knowledge Graph API
-    const kgResults = await fetchKnowledgeGraph(transaction.name) || [];
-    const descriptions = kgResults.filter(result => result.resultScore > threshold);
+    const kgResults = (await fetchKnowledgeGraph(transaction.name)) || [];
+    const descriptions = kgResults.filter(
+      result => result.resultScore > threshold
+    );
 
     // Check if descriptions are over threshold, otherwise use Custom Search API snippets
     let description;
     if (descriptions.length > 0) {
       description = descriptions[0].detailedDescription;
     } else {
-      const searchResults = await fetchCustomSearch(transaction.name) || [];
-      description = searchResults.length > 0
-        ? searchResults.map(result => result.snippet).join(' ')
-        : 'No description available';
+      const searchResults = (await fetchCustomSearch(transaction.name)) || [];
+      description =
+        searchResults.length > 0
+          ? searchResults.map(result => result.snippet).join(' ')
+          : 'No description available';
     }
 
     return {
       transaction_ID: transaction.transaction_ID,
       prompt,
-      context: `Description: ${description}`
+      context: `Description: ${description}`,
     };
   });
   const contexts = await Promise.all(contextPromises);
@@ -131,14 +146,14 @@ export async function batchQueryLLM(transactions: Transaction[], categories?: st
 
     if (response && response.response) {
       const responseText = response.response.toLowerCase();
-      possibleCategories = Object.keys(lowercaseCategoryMap).filter(
-        category => responseText.includes(category)
-      ).map(category => lowercaseCategoryMap[category]);
+      possibleCategories = Object.keys(lowercaseCategoryMap)
+        .filter(category => responseText.includes(category))
+        .map(category => lowercaseCategoryMap[category]);
     }
 
     results.push({
       transaction_ID,
-      possibleCategories
+      possibleCategories,
     });
   }
 

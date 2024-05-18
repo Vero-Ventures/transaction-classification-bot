@@ -1,23 +1,20 @@
-import { batchQueryLLM } from "@/actions/llm";
-import { Transaction, CategorizedResult } from "@/types/Transaction";
+import { batchQueryLLM } from '@/actions/llm';
+import { Transaction, CategorizedResult } from '@/types/Transaction';
 
 export async function POST(req: Request, res: Response) {
-    try {
-        const body = await req.json();
-        const transactions: Transaction[] = body.transactions || [];
-        const categorys = body.categorys;
+  try {
+    const body = await req.json();
+    const transactions: Transaction[] = body.transactions || [];
+    const categorys = body.categorys;
 
-        const results: CategorizedResult[] = await batchQueryLLM(transactions, categorys);
+    const results: CategorizedResult[] = await batchQueryLLM(
+      transactions,
+      categorys
+    );
 
-        return Response.json(
-            results,
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error('Error handling request:', error);
-        return Response.json(
-            { error: 'Error fetching data' },
-            { status: 400 }
-        );
-    }
+    return Response.json(results, { status: 200 });
+  } catch (error) {
+    console.error('Error handling request:', error);
+    return Response.json({ error: 'Error fetching data' }, { status: 400 });
+  }
 }
