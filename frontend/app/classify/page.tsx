@@ -10,7 +10,7 @@ const uncategorizedTransactions = [
     name: 'Grocery shopping',
     account: 'Cash',
     category: '',
-    amount: '50.00',
+    amount: 50.0,
   },
   {
     date: '2024-05-14',
@@ -19,7 +19,7 @@ const uncategorizedTransactions = [
     name: 'Dinner with friends',
     account: 'Credit Card',
     category: '',
-    amount: '80.00',
+    amount: 80.0,
   },
   {
     date: '2024-05-14',
@@ -28,7 +28,7 @@ const uncategorizedTransactions = [
     name: 'Gas refill',
     account: 'Cash',
     category: '',
-    amount: '40.00',
+    amount: 40.0,
   },
 ];
 
@@ -39,8 +39,8 @@ const categorizedTransactions = [
     transaction_ID: '101',
     name: 'Grocery shopping',
     account: 'Cash',
-    category: 'Food',
-    amount: '50.00',
+    category: 'Supplies',
+    amount: 50.0,
   },
   {
     date: '2024-05-14',
@@ -48,8 +48,8 @@ const categorizedTransactions = [
     transaction_ID: '102',
     name: 'Dinner with friends',
     account: 'Credit Card',
-    category: 'Food',
-    amount: '80.00',
+    category: 'Meals and Entertainment',
+    amount: 80.0,
   },
   {
     date: '2024-05-14',
@@ -57,8 +57,8 @@ const categorizedTransactions = [
     transaction_ID: '103',
     name: 'Gas refill',
     account: 'Cash',
-    category: 'Transportation',
-    amount: '40.00',
+    category: 'Fuel',
+    amount: 40.0,
   },
 ];
 
