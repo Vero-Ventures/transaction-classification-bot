@@ -42,7 +42,9 @@ def get_formatted_input(messages, context):
         "The assistant gives helpful, detailed, and polite answers to the user's questions based on the context. "
         "The assistant should also indicate when the answer cannot be found in the context."
     )
-    instruction = "Please give a short 1-3 word word classification answer for the question."
+    instruction = (
+        "Please give a short 1-3 word word classification answer for the question."
+    )
 
     # TODO: Temporary fix for the instruction
     messages = [
