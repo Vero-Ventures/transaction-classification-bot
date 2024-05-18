@@ -2,6 +2,7 @@ import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
+import { find_industry } from '@/actions/quickbooks';
 
 export const options: NextAuthOptions = {
   providers: [
@@ -65,6 +66,17 @@ export const options: NextAuthOptions = {
       session.realmId = token.realmId;
       session.expiresAt = token.expiresAt;
       console.log(`session callback invoked`);
+      // const email = session.user?.email ?? '';
+      // const industry = await find_industry();
+      // try{
+      //   await prisma.user.update({
+      //     where: { email },
+      //     data: { industry },
+      //   });
+      //   console.log(`User industry updated in db: ${industry}`);
+      // } catch (error) {
+      //   console.log(`Error updating user industry: ${error}`);
+      // }
       return session;
     },
     async signIn({ user, account, profile }) {
