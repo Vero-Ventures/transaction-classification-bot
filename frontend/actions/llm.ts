@@ -7,8 +7,8 @@ import { fetchKnowledgeGraph } from "./knowledgegraph";
 const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
 
-const basePrompt = 'Given a list of categories, What type of business expense would a transaction from $NAME be? Categorys: $CATEGORYS';
-const defaultCategorys = [
+const basePrompt = 'Given a list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
+const defaultCategories = [
   'Advertising',
   'Automobile',
   'Fuel',
@@ -52,15 +52,15 @@ const defaultCategorys = [
   'Penalties & Settlements'
 ]
 
-export async function queryLLM(query: string, context: string, name?: string, categorys?: string[]) {
+export async function queryLLM(query: string, context: string, name?: string, categories?: string[]) {
 
   if (!context) {
     throw new Error('Context is required');
   }
 
   if (!query && name) {
-    categorys = categorys || defaultCategorys;
-    query = basePrompt.replace('$NAME', name).replace('$CATEGORYS', categorys.join(', '));
+    categories = categories || defaultCategories;
+    query = basePrompt.replace('$NAME', name).replace('$CATEGORIES', categories.join(', '));
     console.log('Query:', query);
   } else if (!query) {
     throw new Error('Query or name is required');
@@ -88,12 +88,13 @@ export async function queryLLM(query: string, context: string, name?: string, ca
 }
 
 
-export async function batchQueryLLM(transactions: Transaction[], categorys?: string[]) {
+export async function batchQueryLLM(transactions: Transaction[], categories?: string[]) {
   const threshold = 100;
+  categories = categories || defaultCategories;
+  categories = categories.map(category => category.toLowerCase());
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
-    categorys = categorys || defaultCategorys;
-    const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORYS', categorys.join(', '));
+    const prompt = basePrompt.replace('$NAME', transaction.name).replace('$CATEGORIES', categories.join(', '));
 
     // Fetch detailed descriptions from the Knowledge Graph API
     const kgResults = await fetchKnowledgeGraph(transaction.name) || [];
@@ -121,9 +122,20 @@ export async function batchQueryLLM(transactions: Transaction[], categorys?: str
   const results: CategorizedResult[] = [];
   for (const { transaction_ID, prompt, context } of contexts) {
     const response = await queryLLM(prompt, context);
+
+    // Check if response contains a valid category from the list
+    let possibleCategories: string[] = [];
+    
+    if (response && response.response) {
+      possibleCategories = response.response
+        .split(',')
+        .map((category: string) => category.trim().toLowerCase())
+        .filter((category: string) => categories.includes(category));
+    }
+
     results.push({
       transaction_ID,
-      possibleCategories: [response.response.trim()]
+      possibleCategories
     });
   }
 
