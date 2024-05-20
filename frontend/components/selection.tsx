@@ -14,28 +14,35 @@ export default function SelectionPage({
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
 }) {
+  console.log('purchases:', purchases);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
   // Check if there are no transactions found.
-  const checkEmptyTransactions = async () => {
+  const checkEmptyTransactions = () => {
     const noTransactionsMessage = document.getElementById('noTransactions');
     // If there are no transactions, display a message.
     if (purchases.length === 0 && noTransactionsMessage) {
-      noTransactionsMessage.classList.remove('hidden');
+      noTransactionsMessage.innerHTML = 'No transactions found.';
+    }
+    // If there are transactions, hide the message.
+    if (purchases.length > 0 && noTransactionsMessage) {
+      noTransactionsMessage.classList.add('hidden');
     }
   };
 
-  // Call an initial check for an empty transaction list.
+  // Check if there are no transactions found.
   checkEmptyTransactions();
 
-  // Set and record the default the start date and end date.
+  // Create dates for the default start date and end date.
   const today = new Date();
   const backTwoYears = new Date(
     today.getFullYear() - 2,
     today.getMonth(),
     today.getDate()
   );
+
+  // Record the default start date and end date.
   const [startDate, setStartDate] = useState<string>(
     backTwoYears.toLocaleDateString()
   );
@@ -44,14 +51,22 @@ export default function SelectionPage({
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
     try {
+      // Show the loading message.
+      const noTransactionsMessage = document.getElementById('noTransactions');
+      if (noTransactionsMessage) {
+        noTransactionsMessage.innerHTML = 'Loading . . .';
+        noTransactionsMessage.classList.remove('hidden');
+      }
+      // Fetch the transactions from the backend and parse the response.
       const response = await get_transactions(startDate, endDate);
       const result = JSON.parse(response);
-      console.log('result:', result);
+      // If the response is successful, update the purchases and check for empty transactions.
       if (result[0].result === 'Success') {
-        purchases = result;
+        purchases = result.slice(1);
         checkEmptyTransactions();
       }
     } catch (error) {
+      // If there is an error, log the error to the console.
       console.error('Error fetching purchases:', error);
     }
   };
@@ -226,8 +241,8 @@ export default function SelectionPage({
         </div>
         <p
           id="noTransactions"
-          className="text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden">
-          No Transactions Found
+          className="text-center font-display font-bold opacity-80 md:text-xl mt-8">
+          Loading . . .
         </p>
       </div>
     </div>
