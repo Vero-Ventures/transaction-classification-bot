@@ -1,6 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { find_industry } from '@/actions/quickbooks';
+import { getSession } from 'next-auth/react';
+import { use, useEffect, useState } from 'react';
+import prisma from '@/lib/db';
 
 const formatPrice = (price: number) => {
   return price.toLocaleString('en-CA', {
@@ -27,7 +30,36 @@ export default function Home() {
         console.error('Error fetching purchases:', error);
       }
     };
+    const updateIndustry = async () => {
+      const industry = await find_industry();
+      const session = await getSession();
+      const email = session?.user?.email;
+
+      if (email) {
+        try {
+          const response = await fetch('/api/update-industry', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ industry, email }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update industry');
+          }
+
+          const result = await response.json();
+          console.log(result.message);
+        } catch (error) {
+          console.error('Error updating industry:', error);
+        }
+      } else {
+        console.error('No user email found in session');
+      }
+    };
     fetchPurchases();
+    updateIndustry();
   }, []);
 
   return (

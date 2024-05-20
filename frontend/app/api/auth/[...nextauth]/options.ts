@@ -1,6 +1,7 @@
 import { refreshToken } from '@/lib/refreshToken';
 import type { NextAuthOptions } from 'next-auth';
 import { cookies } from 'next/headers';
+import prisma from '@/lib/db';
 
 export const options: NextAuthOptions = {
   providers: [
@@ -57,13 +58,50 @@ export const options: NextAuthOptions = {
       const newToken = await refreshToken(token);
       return newToken;
     },
-    async session({ session, token }) {
+    async session({ session, user, token }) {
       session.userId = token.userId;
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.realmId = token.realmId;
       session.expiresAt = token.expiresAt;
       return session;
+    },
+    async signIn({ user, account, profile }) {
+      try {
+        const email = user.email;
+        const [first_name, last_name] = user.name?.split(' ') ?? [];
+
+        if (!email) {
+          console.error('No user email found in session');
+          return false; // Return false to indicate that sign-in failed
+        }
+
+        const userData = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!userData) {
+          try {
+            await prisma.user.create({
+              data: {
+                email,
+                first_name: first_name,
+                last_name: last_name,
+                industry: '',
+              },
+            });
+            console.log(`New user created in db: ${user}`);
+          } catch (createError) {
+            console.error('Error creating new user in db:', createError);
+            return false; // Return false to indicate that sign-in failed
+          }
+        }
+      } catch (error) {
+        console.error('Error during sign-in:', error);
+        return false; // Return false to indicate that sign-in failed
+      }
+
+      return true; // Return true to indicate that sign-in was successful
     },
   },
   session: {
