@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
+import { get_transactions } from '@/actions/quickbooks';
 
 export default function SelectionPage({
   purchases,
@@ -15,6 +16,46 @@ export default function SelectionPage({
 }) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
+
+  // Set and record the default the start date and end date.
+  const today = new Date();
+  const backTwoYears = new Date(
+    today.getFullYear() - 2,
+    today.getMonth(),
+    today.getDate()
+  );
+  const [startDate, setStartDate] = useState<string>(
+    backTwoYears.toLocaleDateString()
+  );
+  const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
+
+  // Fetch the transactions from the backend when date is updated.
+  const handleDateUpdate = async () => {
+    try {
+      const response = await get_transactions(startDate, endDate);
+      const result = JSON.parse(response);
+      console.log('result:', result);
+      if (result[0].result === 'Success') {
+        purchases = result;
+      }
+    } catch (error) {
+      console.error('Error fetching purchases:', error);
+    }
+  };
+
+  // Update the start date if the start date is before the end date.
+  const handleStartDateChange = (event: string) => {
+    if (new Date(event) < new Date(endDate)) {
+      setStartDate(event);
+    }
+  };
+
+  // Update the end date if the end date is after the start date.
+  const handleEndDateChange = (event: string) => {
+    if (new Date(event) > new Date(startDate)) {
+      setEndDate(event);
+    }
+  };
 
   const selectAll = () => {
     const isSelectedAll = purchases.length === selectedPurchases.length;
@@ -66,11 +107,36 @@ export default function SelectionPage({
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">My Expenses</h1>
       <div className="overflow-x-auto">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
-          onClick={() => handleSubmit(selectedPurchases)}>
-          Classify Transactions
-        </button>
+        <div className="flex justify-between w-full px-4">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
+            onClick={() => handleSubmit(selectedPurchases)}>
+            Classify Transactions
+          </button>
+          <div className="flex items-center">
+            <div className="relative">
+              <input
+                id="start"
+                type="date"
+                onChange={e => handleStartDateChange(e.target.value)}
+                onBlur={handleDateUpdate}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-4 mt-4 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Select date start"
+                value={startDate}></input>
+            </div>
+            <span className="mx-4 text-gray-500">to</span>
+            <div className="relative">
+              <input
+                id="end"
+                type="date"
+                onChange={e => handleEndDateChange(e.target.value)}
+                onBlur={handleDateUpdate}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-4 mt-4 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Select date end"
+                value={endDate}></input>
+            </div>
+          </div>
+        </div>
         <div className="border border-gray-700 rounded-lg overflow-hidden">
           <table className="w-full table-auto divide-y divide-gray-200 dark:divide-neutral-700">
             <thead className="bg-gray-100">

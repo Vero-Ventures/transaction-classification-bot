@@ -390,8 +390,8 @@ function create_query_result(success: boolean, results: any) {
     QueryResult.detail = 'The account objects were found successfully.';
   } else {
     // Set the query result to indicate failure and provide a error message and detail.
-    (QueryResult.result = 'Error'),
-      (QueryResult.message = results.Error[0].Message);
+    QueryResult.result = 'Error';
+    QueryResult.message = results.Error[0].Message;
     QueryResult.detail = results.Error[0].Detail;
   }
 
