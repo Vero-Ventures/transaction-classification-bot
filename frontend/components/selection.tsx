@@ -15,7 +15,6 @@ export default function SelectionPage({
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
 }) {
-  console.log('purchases:', purchases);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
@@ -188,7 +187,7 @@ export default function SelectionPage({
           {purchase.category}
         </td>
         <td className="px-4 py-2 font-medium text-gray-800">
-          ${purchase.amount}
+          -${Math.abs(purchase.amount)}
         </td>
       </tr>
     ));
