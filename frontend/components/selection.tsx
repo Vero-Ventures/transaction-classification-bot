@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { formatPrice } from '@/utils/format-price';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
 
@@ -139,7 +138,7 @@ export default function SelectionPage({
                     {purchase.category}
                   </td>
                   <td className="px-4 py-2 font-medium text-gray-800">
-                    {formatPrice(purchase.amount)}
+                    ${purchase.amount}
                   </td>
                 </tr>
               ))}
