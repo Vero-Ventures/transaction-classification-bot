@@ -16,7 +16,7 @@ export default function Page() {
       setSubTitle(
         'You are already signed in. Click the button below to proceed.'
       );
-      setButtonText('Proceed to Test Page');
+      setButtonText('Proceed to Home Page');
     }
   });
 
@@ -24,8 +24,8 @@ export default function Page() {
     // Check if user is already signed in.
     const session = await getSession();
     if (session) {
-      // Redirect to the test page if user is already signed in.
-      window.location.href = '/test';
+      // Redirect to the home page if user is already signed in.
+      window.location.href = '/home';
       return;
     }
 
