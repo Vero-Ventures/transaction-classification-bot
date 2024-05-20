@@ -5,9 +5,10 @@ export async function POST(req: Request, res: Response) {
   const name = body.name;
   const query = body.query;
   const context = body.context;
+  const categorys = body.categorys;
 
   try {
-    const response = await queryLLM(query, context, name);
+    const response = await queryLLM(query, context, name, categorys);
 
     return Response.json(response, { status: 200 });
   } catch (error) {

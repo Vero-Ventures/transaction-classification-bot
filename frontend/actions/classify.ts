@@ -2,6 +2,7 @@
 import { Transaction, CategorizedResult } from '@/types/Transaction';
 import { Account } from '@/types/Account';
 import { get_accounts } from '@/actions/quickbooks';
+import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
@@ -60,13 +61,9 @@ export const classifyTransactions = async (
     if (noMatches.length > 0) {
       let llmApiResponse;
       try {
-        llmApiResponse = await sendToLLMApi(
-          noMatches,
-          categorizedTransactions,
-          validCategories
-        );
-        if (llmApiResponse && llmApiResponse.data) {
-          llmApiResponse.data.forEach((llmResult: CategorizedResult) => {
+        llmApiResponse = await sendToLLMApi(noMatches, validCategories);
+        if (llmApiResponse) {
+          llmApiResponse.forEach((llmResult: CategorizedResult) => {
             results.push({
               transaction_ID: llmResult.transaction_ID,
               possibleCategories: llmResult.possibleCategories,
@@ -99,24 +96,12 @@ export const classifyTransactions = async (
 
 const sendToLLMApi = async (
   uncategorizedTransactions: Transaction[],
-  categorizedTransactions: Transaction[],
   validCategories: string[]
 ) => {
-  const response = await fetch(process.env.LLM_API_ENDPOINT as string, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      uncategorizedTransactions,
-      categorizedTransactions,
-      validCategories,
-    }),
-  });
+  const response: CategorizedResult[] = await batchQueryLLM(
+    uncategorizedTransactions,
+    validCategories
+  );
 
-  if (!response.ok) {
-    throw new Error(`Failed to send data to LLM API ${response}`);
-  }
-
-  return await response.json();
+  return response;
 };

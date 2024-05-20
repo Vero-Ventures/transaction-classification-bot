@@ -5,8 +5,12 @@ export async function POST(req: Request, res: Response) {
   try {
     const body = await req.json();
     const transactions: Transaction[] = body.transactions || [];
+    const categorys = body.categorys;
 
-    const results: CategorizedResult[] = await batchQueryLLM(transactions);
+    const results: CategorizedResult[] = await batchQueryLLM(
+      transactions,
+      categorys
+    );
 
     return Response.json(results, { status: 200 });
   } catch (error) {

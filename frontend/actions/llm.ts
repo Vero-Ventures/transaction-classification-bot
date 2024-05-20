@@ -8,21 +8,67 @@ const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
 
 const basePrompt =
-  'Given a list of categories, What type of business expense would a transaction from $NAME be? Categorys: $CATEGORYS';
-const categorys = `Advertising, Automobile, Fuel, Bank Charges, Commission & fees, Disposal Fees, Dues & Subscriptions, \
-Equipment Rental, Insurance, Workers Compensation, Job Expenses, Cost of Labour, Installation, Maintenance and Repairs, \
-Equipment Rental, Job Materials, Permits, Legal & Professional Fees, Accounting, Bookkeeper, Lawyer, Maintenance and Repair, \
-Building Repairs, Computer Repairs, Equipment Repairs, Meals and Entertainment, Office Expenses, Promotional, Purchases, \
-Rent or Lease, Stationary & Printing, Supplies, Taxes & Licenses, Unapplied Cash Bill Payment Expense, Uncategorized Expense, \
-Utilities, Gas and Electric, Telephone, Depreciation, Miscellaneous, Penalties & Settlements`;
+  'Given a list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
+const defaultCategories = [
+  'Advertising',
+  'Automobile',
+  'Fuel',
+  'Bank Charges',
+  'Commission & fees',
+  'Disposal Fees',
+  'Dues & Subscriptions',
+  'Equipment Rental',
+  'Insurance',
+  'Workers Compensation',
+  'Job Expenses',
+  'Cost of Labour',
+  'Installation',
+  'Maintenance and Repairs',
+  'Equipment Rental',
+  'Job Materials',
+  'Permits',
+  'Legal & Professional Fees',
+  'Accounting',
+  'Bookkeeper',
+  'Lawyer',
+  'Maintenance and Repair',
+  'Building Repairs',
+  'Computer Repairs',
+  'Equipment Repairs',
+  'Meals and Entertainment',
+  'Office Expenses',
+  'Promotional',
+  'Purchases',
+  'Rent or Lease',
+  'Stationary & Printing',
+  'Supplies',
+  'Taxes & Licenses',
+  'Unapplied Cash Bill Payment Expense',
+  'Uncategorized Expense',
+  'Utilities',
+  'Gas and Electric',
+  'Telephone',
+  'Depreciation',
+  'Miscellaneous',
+  'Penalties & Settlements',
+];
 
-export async function queryLLM(query: string, context: string, name?: string) {
+export async function queryLLM(
+  query: string,
+  context: string,
+  name?: string,
+  categories?: string[]
+) {
   if (!context) {
     throw new Error('Context is required');
   }
 
   if (!query && name) {
-    query = basePrompt.replace('$NAME', name).replace('$CATEGORYS', categorys);
+    categories = categories || defaultCategories;
+    query = basePrompt
+      .replace('$NAME', name)
+      .replace('$CATEGORIES', categories.join(', '));
+    console.log('Query:', query);
   } else if (!query) {
     throw new Error('Query or name is required');
   }
@@ -46,13 +92,24 @@ export async function queryLLM(query: string, context: string, name?: string) {
   }
 }
 
-export async function batchQueryLLM(transactions: Transaction[]) {
+export async function batchQueryLLM(
+  transactions: Transaction[],
+  categories?: string[]
+) {
   const threshold = 100;
+  categories = categories || defaultCategories;
+  const lowercaseCategoryMap = categories.reduce(
+    (map, category) => {
+      map[category.toLowerCase()] = category;
+      return map;
+    },
+    {} as { [key: string]: string }
+  );
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
     const prompt = basePrompt
       .replace('$NAME', transaction.name)
-      .replace('$CATEGORYS', categorys);
+      .replace('$CATEGORIES', categories.join(', '));
 
     // Fetch detailed descriptions from the Knowledge Graph API
     const kgResults = (await fetchKnowledgeGraph(transaction.name)) || [];
@@ -83,9 +140,20 @@ export async function batchQueryLLM(transactions: Transaction[]) {
   const results: CategorizedResult[] = [];
   for (const { transaction_ID, prompt, context } of contexts) {
     const response = await queryLLM(prompt, context);
+
+    // Check if response contains a valid category from the list
+    let possibleCategories: string[] = [];
+
+    if (response && response.response) {
+      const responseText = response.response.toLowerCase();
+      possibleCategories = Object.keys(lowercaseCategoryMap)
+        .filter(category => responseText.includes(category))
+        .map(category => lowercaseCategoryMap[category]);
+    }
+
     results.push({
       transaction_ID,
-      possibleCategories: [response.response.trim()],
+      possibleCategories,
     });
   }
 
