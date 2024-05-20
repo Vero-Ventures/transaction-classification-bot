@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
+import { filterUncategorized } from '@/utils/filter-transactions';
 
 export default function SelectionPage({
   purchases,
@@ -48,22 +49,61 @@ export default function SelectionPage({
   );
   const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
 
+  // Define the updated purchase table.
+  const [updatedPurchaseTable, setUpdatedPurchaseTable] =
+    useState<JSX.Element[]>();
+
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
     try {
-      // Show the loading message.
+      // Get the transaction message reference.
       const noTransactionsMessage = document.getElementById('noTransactions');
+
+      // Reset the message to "loading . . ."" and remove the hidden attribute.
       if (noTransactionsMessage) {
         noTransactionsMessage.innerHTML = 'Loading . . .';
         noTransactionsMessage.classList.remove('hidden');
       }
+
       // Fetch the transactions from the backend and parse the response.
       const response = await get_transactions(startDate, endDate);
       const result = JSON.parse(response);
-      // If the response is successful, update the purchases and check for empty transactions.
+
+      // Check for a successful response.
       if (result[0].result === 'Success') {
+        // Update the purchases and check for empty transactions.
         purchases = result.slice(1);
         checkEmptyTransactions();
+
+        // Sort the new transactions to display.
+        const sortedNewPurchases = [...purchases].sort((a, b) => {
+          if (sortColumn === 'Date') {
+            return sortOrder === 'asc'
+              ? new Date(a.date).getTime() - new Date(b.date).getTime()
+              : new Date(b.date).getTime() - new Date(a.date).getTime();
+          } else if (sortColumn === 'Total') {
+            return sortOrder === 'asc'
+              ? a.amount - b.amount
+              : b.amount - a.amount;
+          }
+          return 0;
+        });
+
+        // Filter and map the new purchases to display.
+        const mappedPurchases = mapPurchases(filterUncategorized(purchases));
+        setUpdatedPurchaseTable(mappedPurchases);
+
+        // Get the old purchases and new purchases table references.
+        const purchaseTable = document.getElementById('purchaseTable');
+        const updatePurchaseTable = document.getElementById(
+          'updatePurchaseTable'
+        );
+
+        // Hide the old purchases and display the new purchases.
+        if (purchaseTable && updatePurchaseTable) {
+          purchaseTable.classList.add('hidden');
+          updatePurchaseTable.classList.remove('hidden');
+        }
       }
     } catch (error) {
       // If there is an error, log the error to the console.
@@ -118,6 +158,41 @@ export default function SelectionPage({
       setSortColumn(column);
       setSortOrder('asc');
     }
+  };
+
+  const mapPurchases = (purchases: Transaction[]) => {
+    const table = purchases.map((purchase, index) => (
+      <tr
+        key={index}
+        onClick={() => selectRow(purchase)}
+        className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID) ? 'bg-blue-100' : ''}`}>
+        <td className="px-4 py-2 text-center">
+          <input
+            type="checkbox"
+            checked={selectedPurchases.some(
+              selectedPurchase =>
+                selectedPurchase.transaction_ID === purchase.transaction_ID
+            )}
+            onChange={() => selectRow(purchase)}
+            onClick={e => e.stopPropagation()}
+          />
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {formatDate(purchase.date)}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {purchase.transaction_type}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">{purchase.name}</td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {purchase.category}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          ${purchase.amount}
+        </td>
+      </tr>
+    ));
+    return table;
   };
 
   const sortedPurchases = [...purchases].sort((a, b) => {
@@ -201,41 +276,15 @@ export default function SelectionPage({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-              {sortedPurchases.map((purchase, index) => (
-                <tr
-                  key={index}
-                  onClick={() => selectRow(purchase)}
-                  className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID) ? 'bg-blue-100' : ''}`}>
-                  <td className="px-4 py-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedPurchases.some(
-                        selectedPurchase =>
-                          selectedPurchase.transaction_ID ===
-                          purchase.transaction_ID
-                      )}
-                      onChange={() => selectRow(purchase)}
-                      onClick={e => e.stopPropagation()}
-                    />
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {formatDate(purchase.date)}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.transaction_type}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.name}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.category}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    ${purchase.amount}
-                  </td>
-                </tr>
-              ))}
+            <tbody
+              id="purchaseTable"
+              className="divide-y divide-gray-200 dark:divide-neutral-700">
+              {mapPurchases(sortedPurchases)}
+            </tbody>
+            <tbody
+              id="updatePurchaseTable"
+              className="divide-y divide-gray-200 dark:divide-neutral-700 hidden">
+              {updatedPurchaseTable}
             </tbody>
           </table>
         </div>
