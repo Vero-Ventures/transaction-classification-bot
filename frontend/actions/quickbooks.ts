@@ -102,9 +102,11 @@ export async function get_transactions(start_date = '', end_date = '') {
       });
     });
 
-    // If there is no start date, set the start date to the default range: 2 years ago.
+    // Get the current date.
+    const today = new Date();
+
+    // If there is no start date, set the start date to the default starting date: 2 years ago.
     if (start_date === '') {
-      const today = new Date();
       const two_years_ago = new Date(
         today.getFullYear() - 2,
         today.getMonth(),
@@ -113,9 +115,9 @@ export async function get_transactions(start_date = '', end_date = '') {
       start_date = two_years_ago.toISOString().split('T')[0];
     }
 
-    // If there is no end date, set the end date to today.
+    // If there is no end date, set the end date to the current date.
     if (end_date === '') {
-      end_date = new Date().toISOString().split('T')[0];
+      end_date = today.toISOString().split('T')[0];
     }
 
     // Defines a start and end date as well as what columns to include for each report.
