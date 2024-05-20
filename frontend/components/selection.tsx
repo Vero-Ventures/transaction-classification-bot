@@ -17,6 +17,18 @@ export default function SelectionPage({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
+  // Check if there are no transactions found.
+  const checkEmptyTransactions = async () => {
+    const noTransactionsMessage = document.getElementById('noTransactions');
+    // If there are no transactions, display a message.
+    if (purchases.length === 0 && noTransactionsMessage) {
+      noTransactionsMessage.classList.remove('hidden');
+    }
+  };
+
+  // Call an initial check for an empty transaction list.
+  checkEmptyTransactions();
+
   // Set and record the default the start date and end date.
   const today = new Date();
   const backTwoYears = new Date(
@@ -37,6 +49,7 @@ export default function SelectionPage({
       console.log('result:', result);
       if (result[0].result === 'Success') {
         purchases = result;
+        checkEmptyTransactions();
       }
     } catch (error) {
       console.error('Error fetching purchases:', error);
@@ -211,6 +224,11 @@ export default function SelectionPage({
             </tbody>
           </table>
         </div>
+        <p
+          id="noTransactions"
+          className="text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden">
+          No Transactions Found
+        </p>
       </div>
     </div>
   );
