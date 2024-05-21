@@ -6,11 +6,13 @@ import { filterUncategorized } from '@/utils/filter-transactions';
 
 export default function SelectionPage({
   purchases,
+  setPurchases,
   handleSubmit,
   selectedPurchases,
   setSelectedPurchases,
 }: {
   purchases: Transaction[];
+  setPurchases: (purchases: Transaction[]) => void;
   handleSubmit: (selectedPurchases: Transaction[]) => void;
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
@@ -30,6 +32,7 @@ export default function SelectionPage({
   const [documentUpdateTableClass, setDocumentUpdateTableClass] =
     useState<string>('divide-y divide-gray-200 dark:divide-neutral-700 hidden');
 
+  // Set value to check if purchases have been updated.
   const [updatedPurchases, setUpdatedPurchases] = useState<boolean>(false);
 
   // Create dates for the default start date and end date.
@@ -68,30 +71,10 @@ export default function SelectionPage({
       if (result[0].result === 'Success') {
         // Update the purchases and check for empty transactions.
         purchases = result.slice(1);
-        setUpdatedPurchases(true);
-
-        // Sort the new transactions to display.
-        const sortedNewPurchases = [...purchases].sort((a, b) => {
-          if (sortColumn === 'Date') {
-            return sortOrder === 'asc'
-              ? new Date(a.date).getTime() - new Date(b.date).getTime()
-              : new Date(b.date).getTime() - new Date(a.date).getTime();
-          } else if (sortColumn === 'Total') {
-            return sortOrder === 'asc'
-              ? a.amount - b.amount
-              : b.amount - a.amount;
-          }
-          return 0;
-        });
-
-        // Filter and map the new purchases to display.
-        const mappedPurchases = mapPurchases(
-          filterUncategorized(sortedNewPurchases)
-        );
-        setUpdatedPurchaseTable(mappedPurchases);
+        setPurchases(filterUncategorized(purchases));
 
         // Check for empty transactions.
-        if (filterUncategorized(sortedNewPurchases).length === 0) {
+        if (filterUncategorized(purchases).length === 0) {
           // Display a message and return if no transactions are found.
           setDocumentMessage('No transactions found.');
           return;
@@ -101,14 +84,6 @@ export default function SelectionPage({
             'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
           );
         }
-
-        // Hide the old table and display the new table.
-        setDocumentTableClass(
-          'divide-y divide-gray-200 dark:divide-neutral-700 hidden'
-        );
-        setDocumentUpdateTableClass(
-          'divide-y divide-gray-200 dark:divide-neutral-700'
-        );
       }
     } catch (error) {
       // If there is an error, log the error to the console.
@@ -203,7 +178,7 @@ export default function SelectionPage({
           {purchase.category}
         </td>
         <td className="px-4 py-2 font-medium text-gray-800">
-          -${Math.abs(purchase.amount)}
+          -${Math.abs(purchase.amount).toFixed(2)}
         </td>
       </tr>
     ));
