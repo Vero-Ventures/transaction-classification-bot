@@ -3,6 +3,7 @@ import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
 import { filterUncategorized } from '@/utils/filter-transactions';
+import { format } from 'date-fns';
 
 export default function SelectionPage({
   unfilteredPurchases,
@@ -40,9 +41,9 @@ export default function SelectionPage({
 
   // Record the default start date and end date.
   const [startDate, setStartDate] = useState<string>(
-    backTwoYears.toLocaleDateString()
+    format(backTwoYears, 'yyyy-MM-dd')
   );
-  const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
+  const [endDate, setEndDate] = useState<string>(format(today, 'yyyy-MM-dd'));
 
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
