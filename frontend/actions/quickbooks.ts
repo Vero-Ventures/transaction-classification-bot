@@ -167,7 +167,8 @@ export async function get_transactions(start_date = '', end_date = '') {
       'Credit Card Expense',
       'Expense',
     ];
-    console.log(results);
+
+    // If no rows were returned, skip formatting the transactions and return the result field.
     if (results != undefined) {
       // For each account object create a formatted transaction object and add it to the array.
       for (let account = 0; account < results.length; account++) {
