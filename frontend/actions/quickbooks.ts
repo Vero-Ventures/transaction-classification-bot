@@ -122,8 +122,8 @@ export async function get_transactions(start_date = '', end_date = '') {
 
     // Defines a start and end date as well as what columns to include for each report.
     const parameters = {
-      start_date: start_date,
-      end_date: end_date,
+      start_date: '2024-05-10',
+      end_date: '2024-05-20',
       limit: 1000,
       columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type'],
     };
@@ -167,31 +167,32 @@ export async function get_transactions(start_date = '', end_date = '') {
       'Credit Card Expense',
       'Expense',
     ];
-
-    // For each account object create a formatted transaction object and add it to the array.
-    for (let account = 0; account < results.length; account++) {
-      // Check account fields to skip any without valid field values.
-      // Skip no-name transactions, transactions without an account, and transactions without an amount.
-      if (
-        purchase_transactions.includes(results[account].ColData[1].value) &&
-        results[account].ColData[2].value !== '' &&
-        results[account].ColData[5].value !== ''
-      ) {
-        // Create a new formatted transaction object with the necessary fields.
-        const new_formatted_transaction: Transaction = {
-          date: results[account].ColData[0].value,
-          transaction_type: results[account].ColData[1].value,
-          transaction_ID: results[account].ColData[1].id,
-          name: results[account].ColData[2].value,
-          account: results[account].ColData[3].value,
-          category: results[account].ColData[4].value,
-          amount: results[account].ColData[5].value,
-        };
-        // Add the transaction to the transactions array.
-        formatted_transactions.push(new_formatted_transaction);
+    console.log(results);
+    if (results != undefined) {
+      // For each account object create a formatted transaction object and add it to the array.
+      for (let account = 0; account < results.length; account++) {
+        // Check account fields to skip any without valid field values.
+        // Skip no-name transactions, transactions without an account, and transactions without an amount.
+        if (
+          purchase_transactions.includes(results[account].ColData[1].value) &&
+          results[account].ColData[2].value !== '' &&
+          results[account].ColData[5].value !== ''
+        ) {
+          // Create a new formatted transaction object with the necessary fields.
+          const new_formatted_transaction: Transaction = {
+            date: results[account].ColData[0].value,
+            transaction_type: results[account].ColData[1].value,
+            transaction_ID: results[account].ColData[1].id,
+            name: results[account].ColData[2].value,
+            account: results[account].ColData[3].value,
+            category: results[account].ColData[4].value,
+            amount: results[account].ColData[5].value,
+          };
+          // Add the transaction to the transactions array.
+          formatted_transactions.push(new_formatted_transaction);
+        }
       }
     }
-
     // Return the formatted results.
     return JSON.stringify(formatted_transactions);
   } catch (error) {
