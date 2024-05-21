@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { formatPrice } from '@/utils/format-price';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
+import { get_transactions } from '@/actions/quickbooks';
+import { filterUncategorized } from '@/utils/filter-transactions';
 
 export default function SelectionPage({
-  purchases,
+  unfilteredPurchases,
+  filteredPurchases,
+  setPurchases,
   handleSubmit,
   selectedPurchases,
   setSelectedPurchases,
 }: {
-  purchases: Transaction[];
+  unfilteredPurchases: Transaction[];
+  filteredPurchases: Transaction[];
+  setPurchases: (purchases: Transaction[]) => void;
   handleSubmit: (selectedPurchases: Transaction[]) => void;
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
@@ -17,12 +22,93 @@ export default function SelectionPage({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
+  // Define states for message elements.
+  const [documentMessage, setDocumentMessage] =
+    useState<string>('Loading . . .');
+  const [documentMessageClass, setDocumentMessageClass] = useState<string>(
+    'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
+  );
+  const [madeDateSearch, setMadeDateSearch] = useState<boolean>(false);
+
+  // Create dates for the default start date and end date.
+  const today = new Date();
+  const backTwoYears = new Date(
+    today.getFullYear() - 2,
+    today.getMonth(),
+    today.getDate()
+  );
+
+  // Record the default start date and end date.
+  const [startDate, setStartDate] = useState<string>(
+    backTwoYears.toLocaleDateString()
+  );
+  const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
+
+  // Define the updated purchase table.
+  const [updatedPurchaseTable, setUpdatedPurchaseTable] = useState<
+    JSX.Element | JSX.Element[]
+  >([]);
+
+  // Fetch the transactions from the backend when date is updated.
+  const handleDateUpdate = async () => {
+    try {
+      // Display a loading message while fetching transactions.
+      setDocumentMessage('Searching . . .');
+      setDocumentMessageClass(
+        'text-center font-display font-bold opacity-80 md:text-xl mt-8'
+      );
+
+      // Fetch the transactions from the backend and parse the response.
+      const response = await get_transactions(startDate, endDate);
+      const result = await JSON.parse(response);
+
+      // Check for a successful response.
+      if (result[0].result === 'Success') {
+        // Update the purchases and filter out invalid transactions.
+        unfilteredPurchases = result;
+        setPurchases(filterUncategorized(result.slice(1)));
+
+        // Record that a date search has been made.
+        setMadeDateSearch(true);
+
+        // Check for empty transactions.
+        if (unfilteredPurchases.length === 1) {
+          // Display a message and return if no transactions are found.
+          setDocumentMessage('No transactions found.');
+          return;
+        } else {
+          // Otherwise, hide the message and continue.
+          setDocumentMessageClass(
+            'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
+          );
+        }
+      }
+    } catch (error) {
+      // If there is an error, log the error to the console.
+      console.error('Error fetching purchases:', error);
+    }
+  };
+
+  // Update the start date if the start date is before the end date.
+  const handleStartDateChange = (event: string) => {
+    if (new Date(event) < new Date(endDate)) {
+      setStartDate(event);
+    }
+  };
+
+  // Update the end date if the end date is after the start date.
+  const handleEndDateChange = (event: string) => {
+    if (new Date(event) > new Date(startDate)) {
+      setEndDate(event);
+    }
+  };
+
   const selectAll = () => {
-    const isSelectedAll = purchases.length === selectedPurchases.length;
+    const isSelectedAll = filteredPurchases.length === selectedPurchases.length;
     if (isSelectedAll) {
       setSelectedPurchases([]);
     } else {
-      setSelectedPurchases(purchases);
+      setSelectedPurchases(filteredPurchases);
     }
   };
 
@@ -52,7 +138,52 @@ export default function SelectionPage({
     }
   };
 
-  const sortedPurchases = [...purchases].sort((a, b) => {
+  const mapPurchases = (purchases: Transaction[]) => {
+    // If the transactions are still loading, display a loading message.
+    if (purchases.length === 0 && madeDateSearch === false) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center text-lg py-4">
+            Loading . . .
+          </td>
+        </tr>
+      );
+    }
+    const table = purchases.map((purchase, index) => (
+      <tr
+        key={index}
+        onClick={() => selectRow(purchase)}
+        className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID) ? 'bg-blue-100' : ''}`}>
+        <td className="px-4 py-2 text-center">
+          <input
+            type="checkbox"
+            checked={selectedPurchases.some(
+              selectedPurchase =>
+                selectedPurchase.transaction_ID === purchase.transaction_ID
+            )}
+            onChange={() => selectRow(purchase)}
+            onClick={e => e.stopPropagation()}
+          />
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {formatDate(purchase.date)}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {purchase.transaction_type}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">{purchase.name}</td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          {purchase.category}
+        </td>
+        <td className="px-4 py-2 font-medium text-gray-800">
+          -${Math.abs(purchase.amount).toFixed(2)}
+        </td>
+      </tr>
+    ));
+    return table;
+  };
+
+  const sortedPurchases = [...filteredPurchases].sort((a, b) => {
     if (sortColumn === 'Date') {
       return sortOrder === 'asc'
         ? new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -67,11 +198,36 @@ export default function SelectionPage({
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">My Expenses</h1>
       <div className="overflow-x-auto">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
-          onClick={() => handleSubmit(selectedPurchases)}>
-          Classify Transactions
-        </button>
+        <div className="flex justify-between w-full px-4">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
+            onClick={() => handleSubmit(selectedPurchases)}>
+            Classify Transactions
+          </button>
+          <div className="flex items-center">
+            <div className="relative">
+              <input
+                id="start"
+                type="date"
+                onChange={e => handleStartDateChange(e.target.value)}
+                onBlur={handleDateUpdate}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-4 mt-4 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Select date start"
+                value={startDate}></input>
+            </div>
+            <span className="mx-4 text-gray-500">to</span>
+            <div className="relative">
+              <input
+                id="end"
+                type="date"
+                onChange={e => handleEndDateChange(e.target.value)}
+                onBlur={handleDateUpdate}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full py-2 px-4 mt-4 mb-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder="Select date end"
+                value={endDate}></input>
+            </div>
+          </div>
+        </div>
         <div className="border border-gray-700 rounded-lg overflow-hidden">
           <table className="w-full table-auto divide-y divide-gray-200 dark:divide-neutral-700">
             <thead className="bg-gray-100">
@@ -79,7 +235,9 @@ export default function SelectionPage({
                 <th className="px-4 py-2 text-gray-500">
                   <input
                     type="checkbox"
-                    checked={purchases.length === selectedPurchases.length}
+                    checked={
+                      filteredPurchases.length === selectedPurchases.length
+                    }
                     onChange={selectAll}
                   />
                 </th>
@@ -108,44 +266,16 @@ export default function SelectionPage({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
-              {sortedPurchases.map((purchase, index) => (
-                <tr
-                  key={index}
-                  onClick={() => selectRow(purchase)}
-                  className={`${selectedPurchases.some(selectedPurchase => selectedPurchase.transaction_ID === purchase.transaction_ID) ? 'bg-blue-100' : ''}`}>
-                  <td className="px-4 py-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedPurchases.some(
-                        selectedPurchase =>
-                          selectedPurchase.transaction_ID ===
-                          purchase.transaction_ID
-                      )}
-                      onChange={() => selectRow(purchase)}
-                      onClick={e => e.stopPropagation()}
-                    />
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {formatDate(purchase.date)}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.transaction_type}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.name}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {purchase.category}
-                  </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    {formatPrice(purchase.amount)}
-                  </td>
-                </tr>
-              ))}
+            <tbody
+              id="purchaseTable"
+              className="divide-y divide-gray-200 dark:divide-neutral-700">
+              {mapPurchases(sortedPurchases)}
             </tbody>
           </table>
         </div>
+        <p id="noTransactions" className={documentMessageClass}>
+          {documentMessage}
+        </p>
       </div>
     </div>
   );

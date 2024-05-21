@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '@/utils/format-date';
-import { formatPrice } from '@/utils/format-price';
 import { Transaction } from '@/types/Transaction';
 
 export default function ReviewPage({
@@ -92,7 +91,7 @@ export default function ReviewPage({
                     )}
                   </td>
                   <td className="px-4 py-2 font-medium text-gray-800">
-                    {formatPrice(purchase.amount)}
+                    ${purchase.amount}
                   </td>
                 </tr>
               ))}

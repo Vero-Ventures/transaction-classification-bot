@@ -77,7 +77,8 @@ export async function get_accounts() {
 }
 
 // Get all transactions from the QuickBooks API.
-export async function get_transactions() {
+// Can take a start date and end date as optional parameters.
+export async function get_transactions(start_date = '', end_date = '') {
   // Try to get all purchase transaction objects from the API.
   // Catches any errors that occur and returns them as a response.
   try {
@@ -87,20 +88,53 @@ export async function get_transactions() {
     // Create tracker to indicate if the query was successful or not.
     let success = true;
 
+    // Query user preferences to get the multi-currency preference for the user.
+    const preferences: any = await new Promise((resolve, reject) => {
+      qbo.getPreferences((err: Error, data: any) => {
+        // If there is an error, check if it has a 'Fault' property
+        // Then resolve the error to allow a formatted JSON error message to be passed to the caller.
+        if (err && 'Fault' in err) {
+          success = false;
+          resolve(err.Fault);
+        }
+        // If there is no error, resolve the data to allow the caller to access the results.
+        resolve(data);
+      });
+    });
+
+    // Get the current date.
+    const today = new Date();
+
+    // If there is no start date, set the start date to the default starting date: 2 years ago.
+    if (start_date === '') {
+      const two_years_ago = new Date(
+        today.getFullYear() - 2,
+        today.getMonth(),
+        today.getDate()
+      );
+      start_date = two_years_ago.toISOString().split('T')[0];
+    }
+
+    // If there is no end date, set the end date to the current date.
+    if (end_date === '') {
+      end_date = today.toISOString().split('T')[0];
+    }
+
     // Defines a start and end date as well as what columns to include for each report.
     const parameters = {
-      start_date: '2022-01-01',
-      end_date: '2024-12-31',
+      start_date: start_date,
+      end_date: end_date,
       limit: 1000,
-      columns: [
-        'account_name',
-        'name',
-        'other_account',
-        'tx_date',
-        'txn_type',
-        'subt_nat_amount',
-      ],
+      columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type'],
     };
+
+    // Check if the user has multi-currency enabled.
+    // Add the appropriate amount column to the parameters.
+    if (preferences.CurrencyPrefs.MultiCurrencyEnabled) {
+      parameters.columns.push('subt_nat_home_amount');
+    } else {
+      parameters.columns.push('subt_nat_amount');
+    }
 
     // Get the all purchase transactions.
     const response: any = await new Promise((resolve, reject) => {
@@ -134,28 +168,32 @@ export async function get_transactions() {
       'Expense',
     ];
 
-    // For each account object create a formatted transaction object and add it to the array.
-    for (let account = 0; account < results.length; account++) {
-      // Skip any inactive accounts by checking active value before recording the transactions.
-      if (
-        purchase_transactions.includes(results[account].ColData[1].value) &&
-        results[account].ColData[2].value !== ''
-      ) {
-        // Create a new formatted transaction object with the necessary fields.
-        const new_formatted_transaction: Transaction = {
-          date: results[account].ColData[0].value,
-          transaction_type: results[account].ColData[1].value,
-          transaction_ID: results[account].ColData[1].id,
-          name: results[account].ColData[2].value,
-          account: results[account].ColData[3].value,
-          category: results[account].ColData[4].value,
-          amount: results[account].ColData[5].value,
-        };
-        // Add the transaction to the transactions array.
-        formatted_transactions.push(new_formatted_transaction);
+    // If no rows were returned, skip formatting the transactions and return the result field.
+    if (results != undefined) {
+      // For each account object create a formatted transaction object and add it to the array.
+      for (let account = 0; account < results.length; account++) {
+        // Check account fields to skip any without valid field values.
+        // Skip no-name transactions, transactions without an account, and transactions without an amount.
+        if (
+          purchase_transactions.includes(results[account].ColData[1].value) &&
+          results[account].ColData[2].value !== '' &&
+          results[account].ColData[5].value !== ''
+        ) {
+          // Create a new formatted transaction object with the necessary fields.
+          const new_formatted_transaction: Transaction = {
+            date: results[account].ColData[0].value,
+            transaction_type: results[account].ColData[1].value,
+            transaction_ID: results[account].ColData[1].id,
+            name: results[account].ColData[2].value,
+            account: results[account].ColData[3].value,
+            category: results[account].ColData[4].value,
+            amount: results[account].ColData[5].value,
+          };
+          // Add the transaction to the transactions array.
+          formatted_transactions.push(new_formatted_transaction);
+        }
       }
     }
-
     // Return the formatted results.
     return JSON.stringify(formatted_transactions);
   } catch (error) {
@@ -356,8 +394,8 @@ function create_query_result(success: boolean, results: any) {
     QueryResult.detail = 'The account objects were found successfully.';
   } else {
     // Set the query result to indicate failure and provide a error message and detail.
-    (QueryResult.result = 'Error'),
-      (QueryResult.message = results.Error[0].Message);
+    QueryResult.result = 'Error';
+    QueryResult.message = results.Error[0].Message;
     QueryResult.detail = results.Error[0].Detail;
   }
 

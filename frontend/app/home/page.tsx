@@ -55,7 +55,9 @@ export default function HomePage() {
     />
   ) : (
     <SelectionPage
-      purchases={filterUncategorized(purchases)}
+      unfilteredPurchases={purchases}
+      filteredPurchases={filterUncategorized(purchases)}
+      setPurchases={setPurchases}
       handleSubmit={handleSubmit}
       selectedPurchases={selectedPurchases}
       setSelectedPurchases={setSelectedPurchases}
