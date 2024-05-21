@@ -122,8 +122,8 @@ export async function get_transactions(start_date = '', end_date = '') {
 
     // Defines a start and end date as well as what columns to include for each report.
     const parameters = {
-      start_date: '2024-05-10',
-      end_date: '2024-05-20',
+      start_date: start_date,
+      end_date: end_date,
       limit: 1000,
       columns: ['account_name', 'name', 'other_account', 'tx_date', 'txn_type'],
     };
