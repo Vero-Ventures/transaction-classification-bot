@@ -15,7 +15,6 @@ export default function SelectionPage({
   unfilteredPurchases: Transaction[];
   filteredPurchases: Transaction[];
   setPurchases: (purchases: Transaction[]) => void;
-  setFilteredPurchases: (purchases: Transaction[]) => void;
   handleSubmit: (selectedPurchases: Transaction[]) => void;
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
