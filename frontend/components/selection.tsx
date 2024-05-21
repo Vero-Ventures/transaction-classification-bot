@@ -18,21 +18,17 @@ export default function SelectionPage({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
-  // Check if there are no transactions found.
-  const checkEmptyTransactions = () => {
-    const noTransactionsMessage = document.getElementById('noTransactions');
-    // If there are no transactions, display a message.
-    if (purchases.length === 0 && noTransactionsMessage) {
-      noTransactionsMessage.innerHTML = 'No transactions found.';
-    }
-    // If there are transactions, hide the message.
-    if (purchases.length > 0 && noTransactionsMessage) {
-      noTransactionsMessage.classList.add('hidden');
-    }
-  };
-
-  // Check if there are no transactions found.
-  checkEmptyTransactions();
+  // Define states for document elements.
+  const [documentMessage, setDocumentMessage] =
+    useState<string>('Loading . . .');
+  const [documentMessageClass, setDocumentMessageClass] = useState<string>(
+    'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
+  );
+  const [documentTableClass, setDocumentTableClass] = useState<string>(
+    'divide-y divide-gray-200 dark:divide-neutral-700'
+  );
+  const [documentUpdateTableClass, setDocumentUpdateTableClass] =
+    useState<string>('divide-y divide-gray-200 dark:divide-neutral-700 hidden');
 
   // Create dates for the default start date and end date.
   const today = new Date();
@@ -55,24 +51,21 @@ export default function SelectionPage({
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
     try {
-      // Get the transaction message reference.
-      const noTransactionsMessage = document.getElementById('noTransactions');
-
-      // Reset the message to "loading . . ."" and remove the hidden attribute.
-      if (noTransactionsMessage) {
-        noTransactionsMessage.innerHTML = 'Loading . . .';
-        noTransactionsMessage.classList.remove('hidden');
-      }
+      // Display a loading message while fetching transactions.
+      setDocumentMessage('Searching . . .');
+      setDocumentMessageClass(
+        'text-center font-display font-bold opacity-80 md:text-xl mt-8'
+      );
 
       // Fetch the transactions from the backend and parse the response.
       const response = await get_transactions(startDate, endDate);
-      const result = JSON.parse(response);
+      const result = await JSON.parse(response);
+      console.log('Result:', result);
 
       // Check for a successful response.
       if (result[0].result === 'Success') {
         // Update the purchases and check for empty transactions.
         purchases = result.slice(1);
-        checkEmptyTransactions();
 
         // Sort the new transactions to display.
         const sortedNewPurchases = [...purchases].sort((a, b) => {
@@ -89,20 +82,30 @@ export default function SelectionPage({
         });
 
         // Filter and map the new purchases to display.
-        const mappedPurchases = mapPurchases(filterUncategorized(purchases));
+        const mappedPurchases = mapPurchases(
+          filterUncategorized(sortedNewPurchases)
+        );
         setUpdatedPurchaseTable(mappedPurchases);
 
-        // Get the old purchases and new purchases table references.
-        const purchaseTable = document.getElementById('purchaseTable');
-        const updatePurchaseTable = document.getElementById(
-          'updatePurchaseTable'
-        );
-
-        // Hide the old purchases and display the new purchases.
-        if (purchaseTable && updatePurchaseTable) {
-          purchaseTable.classList.add('hidden');
-          updatePurchaseTable.classList.remove('hidden');
+        // Check for empty transactions.
+        if (filterUncategorized(sortedNewPurchases).length === 0) {
+          // Display a message and return if no transactions are found.
+          setDocumentMessage('No transactions found.');
+          return;
+        } else {
+          // Otherwise, hide the message and continue.
+          setDocumentMessageClass(
+            'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
+          );
         }
+
+        // Hide the old table and display the new table.
+        setDocumentTableClass(
+          'divide-y divide-gray-200 dark:divide-neutral-700 hidden'
+        );
+        setDocumentUpdateTableClass(
+          'divide-y divide-gray-200 dark:divide-neutral-700'
+        );
       }
     } catch (error) {
       // If there is an error, log the error to the console.
@@ -275,22 +278,18 @@ export default function SelectionPage({
                 </th>
               </tr>
             </thead>
-            <tbody
-              id="purchaseTable"
-              className="divide-y divide-gray-200 dark:divide-neutral-700">
+            <tbody id="purchaseTable" className={documentTableClass}>
               {mapPurchases(sortedPurchases)}
             </tbody>
             <tbody
               id="updatePurchaseTable"
-              className="divide-y divide-gray-200 dark:divide-neutral-700 hidden">
+              className={documentUpdateTableClass}>
               {updatedPurchaseTable}
             </tbody>
           </table>
         </div>
-        <p
-          id="noTransactions"
-          className="text-center font-display font-bold opacity-80 md:text-xl mt-8">
-          Loading . . .
+        <p id="noTransactions" className={documentMessageClass}>
+          {documentMessage}
         </p>
       </div>
     </div>
