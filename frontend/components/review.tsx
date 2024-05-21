@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
+import {
+  find_purchase,
+  get_accounts,
+  update_purchase,
+} from '@/actions/quickbooks';
+import { Account } from '@/types/Account';
 
 export default function ReviewPage({
   selectedPurchases,
@@ -9,19 +15,36 @@ export default function ReviewPage({
   selectedPurchases: Transaction[];
   categorizedResults: Record<string, string[]>;
 }) {
+  const [accounts, setAccounts] = useState<Record<string, string>>({});
   const [selectedCategories, setSelectedCategories] = useState<
     Record<string, string>
   >({});
 
   useEffect(() => {
-    const initialCategories: Record<string, string> = {};
-    selectedPurchases.forEach(purchase => {
-      const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
-      if (firstCategory) {
-        initialCategories[purchase.transaction_ID] = firstCategory;
-      }
-    });
-    setSelectedCategories(initialCategories);
+    const initializeCategories = async () => {
+      const initialCategories: Record<string, string> = {};
+      selectedPurchases.forEach(purchase => {
+        const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
+        if (firstCategory) {
+          initialCategories[purchase.transaction_ID] = firstCategory;
+        }
+      });
+      setSelectedCategories(initialCategories);
+    };
+
+    const fetchAccounts = async () => {
+      const response = JSON.parse(await get_accounts());
+      const accounts = response
+        .slice(1)
+        .reduce((acc: { [account_name: string]: string }, account: Account) => {
+          acc[account.name] = account.id;
+          return acc;
+        }, {});
+      setAccounts(accounts);
+    };
+
+    initializeCategories();
+    fetchAccounts();
   }, [selectedPurchases, categorizedResults]);
 
   const handleCategoryChange = (purchaseId: string, category: string) => {
@@ -31,8 +54,22 @@ export default function ReviewPage({
     });
   };
 
-  const handleSave = () => {
-    console.log(selectedCategories);
+  const handleSave = async () => {
+    try {
+      await Promise.all(
+        Object.entries(selectedCategories).map(
+          async ([transactionID, category]) => {
+            const purchaseObj = await find_purchase(transactionID, false);
+            if (purchaseObj) {
+              const accountID = accounts[category];
+              await update_purchase(accountID, purchaseObj);
+            }
+          }
+        )
+      );
+    } catch (error) {
+      console.error('Error saving categories:', error);
+    }
   };
 
   return (

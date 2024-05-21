@@ -283,11 +283,7 @@ export async function find_purchase(id: string, format_result: boolean) {
 }
 
 // Update a specific purchase object passed to the function.
-export async function update_purchase(
-  new_account_id: string,
-  new_account_name: string,
-  purchase: any
-) {
+export async function update_purchase(new_account_id: string, purchase: any) {
   // Try to update a specific purchase object from the API.
   // Catches any errors that occur and returns them as a response.
   try {
@@ -306,8 +302,6 @@ export async function update_purchase(
         // If it is present, update the purchase category field of the formatted results.
         update_purchase.Line[i].AccountBasedExpenseLineDetail.AccountRef.value =
           new_account_id;
-        update_purchase.Line[i].AccountBasedExpenseLineDetail.AccountRef.name =
-          new_account_name;
         break;
       }
     }
