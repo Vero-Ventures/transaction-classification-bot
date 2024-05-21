@@ -30,6 +30,8 @@ export default function SelectionPage({
   const [documentUpdateTableClass, setDocumentUpdateTableClass] =
     useState<string>('divide-y divide-gray-200 dark:divide-neutral-700 hidden');
 
+  const [updatedPurchases, setUpdatedPurchases] = useState<boolean>(false);
+
   // Create dates for the default start date and end date.
   const today = new Date();
   const backTwoYears = new Date(
@@ -61,12 +63,12 @@ export default function SelectionPage({
       // Fetch the transactions from the backend and parse the response.
       const response = await get_transactions(startDate, endDate);
       const result = await JSON.parse(response);
-      console.log('Result:', result);
 
       // Check for a successful response.
       if (result[0].result === 'Success') {
         // Update the purchases and check for empty transactions.
         purchases = result.slice(1);
+        setUpdatedPurchases(true);
 
         // Sort the new transactions to display.
         const sortedNewPurchases = [...purchases].sort((a, b) => {
@@ -165,7 +167,7 @@ export default function SelectionPage({
 
   const mapPurchases = (purchases: Transaction[]) => {
     // If the transactions are still loading, display a loading message.
-    if (purchases.length === 0) {
+    if (purchases.length === 0 && !updatedPurchases) {
       return (
         <tr>
           <td colSpan={6} className="text-center text-lg py-4">
