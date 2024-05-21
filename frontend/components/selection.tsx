@@ -44,11 +44,6 @@ export default function SelectionPage({
   );
   const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
 
-  // Define the updated purchase table.
-  const [updatedPurchaseTable, setUpdatedPurchaseTable] = useState<
-    JSX.Element | JSX.Element[]
-  >([]);
-
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
     try {
@@ -90,15 +85,23 @@ export default function SelectionPage({
   };
 
   // Update the start date if the start date is before the end date.
+  // Also check that the start date is in the past but after 2000.
   const handleStartDateChange = (event: string) => {
-    if (new Date(event) < new Date(endDate)) {
+    if (
+      new Date(event) < new Date(endDate) &&
+      new Date(event) > new Date('2000-01-01')
+    ) {
       setStartDate(event);
     }
   };
 
   // Update the end date if the end date is after the start date.
+  // Also check that the end date is in the past but after 2000.
   const handleEndDateChange = (event: string) => {
-    if (new Date(event) > new Date(startDate)) {
+    if (
+      new Date(event) > new Date(startDate) &&
+      new Date(event) > new Date('2000-01-01')
+    ) {
       setEndDate(event);
     }
   };
@@ -140,11 +143,21 @@ export default function SelectionPage({
 
   const mapPurchases = (purchases: Transaction[]) => {
     // If the transactions are still loading, display a loading message.
-    if (purchases.length === 0 && madeDateSearch === false) {
+    if (unfilteredPurchases.length === 0 && madeDateSearch === false) {
       return (
         <tr>
           <td colSpan={6} className="text-center text-lg py-4">
             Loading . . .
+          </td>
+        </tr>
+      );
+    }
+    // If the transactions have loaded and there are no transactions, display a message.
+    if (unfilteredPurchases.length !== 0 && purchases.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center text-lg py-4">
+            No transactions found.
           </td>
         </tr>
       );
