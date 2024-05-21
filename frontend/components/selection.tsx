@@ -5,14 +5,17 @@ import { get_transactions } from '@/actions/quickbooks';
 import { filterUncategorized } from '@/utils/filter-transactions';
 
 export default function SelectionPage({
-  purchases,
+  unfilteredPurchases,
+  filteredPurchases,
   setPurchases,
   handleSubmit,
   selectedPurchases,
   setSelectedPurchases,
 }: {
-  purchases: Transaction[];
+  unfilteredPurchases: Transaction[];
+  filteredPurchases: Transaction[];
   setPurchases: (purchases: Transaction[]) => void;
+  setFilteredPurchases: (purchases: Transaction[]) => void;
   handleSubmit: (selectedPurchases: Transaction[]) => void;
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
@@ -20,20 +23,13 @@ export default function SelectionPage({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
-  // Define states for document elements.
+  // Define states for message elements.
   const [documentMessage, setDocumentMessage] =
     useState<string>('Loading . . .');
   const [documentMessageClass, setDocumentMessageClass] = useState<string>(
     'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
   );
-  const [documentTableClass, setDocumentTableClass] = useState<string>(
-    'divide-y divide-gray-200 dark:divide-neutral-700'
-  );
-  const [documentUpdateTableClass, setDocumentUpdateTableClass] =
-    useState<string>('divide-y divide-gray-200 dark:divide-neutral-700 hidden');
-
-  // Set value to check if purchases have been updated.
-  const [updatedPurchases, setUpdatedPurchases] = useState<boolean>(false);
+  const [madeDateSearch, setMadeDateSearch] = useState<boolean>(false);
 
   // Create dates for the default start date and end date.
   const today = new Date();
@@ -69,12 +65,15 @@ export default function SelectionPage({
 
       // Check for a successful response.
       if (result[0].result === 'Success') {
-        // Update the purchases and check for empty transactions.
-        purchases = result.slice(1);
-        setPurchases(filterUncategorized(purchases));
+        // Update the purchases and filter out invalid transactions.
+        unfilteredPurchases = result;
+        setPurchases(filterUncategorized(result.slice(1)));
+
+        // Record that a date search has been made.
+        setMadeDateSearch(true);
 
         // Check for empty transactions.
-        if (filterUncategorized(purchases).length === 0) {
+        if (unfilteredPurchases.length === 1) {
           // Display a message and return if no transactions are found.
           setDocumentMessage('No transactions found.');
           return;
@@ -106,11 +105,11 @@ export default function SelectionPage({
   };
 
   const selectAll = () => {
-    const isSelectedAll = purchases.length === selectedPurchases.length;
+    const isSelectedAll = filteredPurchases.length === selectedPurchases.length;
     if (isSelectedAll) {
       setSelectedPurchases([]);
     } else {
-      setSelectedPurchases(purchases);
+      setSelectedPurchases(filteredPurchases);
     }
   };
 
@@ -142,7 +141,7 @@ export default function SelectionPage({
 
   const mapPurchases = (purchases: Transaction[]) => {
     // If the transactions are still loading, display a loading message.
-    if (purchases.length === 0 && !updatedPurchases) {
+    if (purchases.length === 0 && madeDateSearch === false) {
       return (
         <tr>
           <td colSpan={6} className="text-center text-lg py-4">
@@ -185,7 +184,7 @@ export default function SelectionPage({
     return table;
   };
 
-  const sortedPurchases = [...purchases].sort((a, b) => {
+  const sortedPurchases = [...filteredPurchases].sort((a, b) => {
     if (sortColumn === 'Date') {
       return sortOrder === 'asc'
         ? new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -237,7 +236,9 @@ export default function SelectionPage({
                 <th className="px-4 py-2 text-gray-500">
                   <input
                     type="checkbox"
-                    checked={purchases.length === selectedPurchases.length}
+                    checked={
+                      filteredPurchases.length === selectedPurchases.length
+                    }
                     onChange={selectAll}
                   />
                 </th>
@@ -266,13 +267,10 @@ export default function SelectionPage({
                 </th>
               </tr>
             </thead>
-            <tbody id="purchaseTable" className={documentTableClass}>
-              {mapPurchases(sortedPurchases)}
-            </tbody>
             <tbody
-              id="updatePurchaseTable"
-              className={documentUpdateTableClass}>
-              {updatedPurchaseTable}
+              id="purchaseTable"
+              className="divide-y divide-gray-200 dark:divide-neutral-700">
+              {mapPurchases(sortedPurchases)}
             </tbody>
           </table>
         </div>
