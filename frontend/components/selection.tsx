@@ -90,7 +90,8 @@ export default function SelectionPage({
   const handleStartDateChange = (event: string) => {
     if (
       new Date(event) < new Date(endDate) &&
-      new Date(event) > new Date('2000-01-01')
+      new Date(event) > new Date('2000-01-01') &&
+      new Date(event) < new Date()
     ) {
       setStartDate(event);
     }
@@ -101,7 +102,8 @@ export default function SelectionPage({
   const handleEndDateChange = (event: string) => {
     if (
       new Date(event) > new Date(startDate) &&
-      new Date(event) > new Date('2000-01-01')
+      new Date(event) > new Date('2000-01-01') &&
+      new Date(event) < new Date()
     ) {
       setEndDate(event);
     }
