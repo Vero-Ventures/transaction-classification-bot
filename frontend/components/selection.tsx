@@ -45,8 +45,9 @@ export default function SelectionPage({
   const [endDate, setEndDate] = useState<string>(today.toLocaleDateString());
 
   // Define the updated purchase table.
-  const [updatedPurchaseTable, setUpdatedPurchaseTable] =
-    useState<JSX.Element[]>();
+  const [updatedPurchaseTable, setUpdatedPurchaseTable] = useState<
+    JSX.Element | JSX.Element[]
+  >([]);
 
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
@@ -163,6 +164,16 @@ export default function SelectionPage({
   };
 
   const mapPurchases = (purchases: Transaction[]) => {
+    // If the transactions are still loading, display a loading message.
+    if (purchases.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center text-lg py-4">
+            Loading . . .
+          </td>
+        </tr>
+      );
+    }
     const table = purchases.map((purchase, index) => (
       <tr
         key={index}
