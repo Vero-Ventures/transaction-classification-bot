@@ -8,7 +8,7 @@ export type Transaction = {
   name: string;
   account: string;
   category: string;
-  // amount: Decimal as a string.
+  // amount: Positive or negative decimal as a string.
   amount: number;
 };
 
