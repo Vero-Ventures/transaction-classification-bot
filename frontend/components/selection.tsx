@@ -19,6 +19,7 @@ export default function SelectionPage({
   selectedPurchases: Transaction[];
   setSelectedPurchases: (selectedPurchases: Transaction[]) => void;
 }) {
+  // Define the sort order and sort column for the purchase table.
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
 
@@ -28,6 +29,7 @@ export default function SelectionPage({
   const [documentMessageClass, setDocumentMessageClass] = useState<string>(
     'text-center font-display font-bold opacity-80 md:text-xl mt-8 hidden'
   );
+  // Set a state to record if a search by date range has been made.
   const [madeDateSearch, setMadeDateSearch] = useState<boolean>(false);
 
   // Create dates for the default start date and end date.
@@ -103,20 +105,27 @@ export default function SelectionPage({
     }
   };
 
+  // Select all transactions in the table.
   const selectAll = () => {
+    // Check if all transactions are selected.
     const isSelectedAll = filteredPurchases.length === selectedPurchases.length;
     if (isSelectedAll) {
+      // If all transactions are selected, deselect all transactions.
       setSelectedPurchases([]);
     } else {
+      // Otherwise, select all transactions.
       setSelectedPurchases(filteredPurchases);
     }
   };
 
+  // Select a row in the table.
   const selectRow = (purchase: Transaction) => {
+    // Check if the transaction is already selected.
     const isSelected = selectedPurchases.some(
       selectedPurchase =>
         selectedPurchase.transaction_ID === purchase.transaction_ID
     );
+    // If the transaction is selected, deselect it.
     if (isSelected) {
       setSelectedPurchases(
         selectedPurchases.filter(
@@ -125,14 +134,19 @@ export default function SelectionPage({
         )
       );
     } else {
+      // Otherwise, select the transaction.
       setSelectedPurchases([...selectedPurchases, purchase]);
     }
   };
 
+  // Sort the transactions in the table.
   const handleSort = (column: string) => {
+    // Check if the sorting column matches the clicked column.
     if (sortColumn === column) {
+      // If the sorting column matches, toggle the sort order.
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
+      // Otherwise, update the sorting column and sort in ascending order.
       setSortColumn(column);
       setSortOrder('asc');
     }
@@ -149,6 +163,7 @@ export default function SelectionPage({
         </tr>
       );
     }
+    // Map the transactions to the table.
     const table = purchases.map((purchase, index) => (
       <tr
         key={index}
@@ -183,14 +198,18 @@ export default function SelectionPage({
     return table;
   };
 
+  // Filter the purchases based on the selected date range.
   const sortedPurchases = [...filteredPurchases].sort((a, b) => {
+    // If the sorting column is 'Date', check the sort order, then sort by date.
     if (sortColumn === 'Date') {
       return sortOrder === 'asc'
         ? new Date(a.date).getTime() - new Date(b.date).getTime()
         : new Date(b.date).getTime() - new Date(a.date).getTime();
     } else if (sortColumn === 'Total') {
+      // If the sorting column is 'Total', check the sort order, then sort by amount.
       return sortOrder === 'asc' ? a.amount - b.amount : b.amount - a.amount;
     }
+    // If no sorting column is selected, return 0.
     return 0;
   });
 

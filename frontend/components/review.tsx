@@ -9,28 +9,36 @@ export default function ReviewPage({
   selectedPurchases: Transaction[];
   categorizedResults: Record<string, string[]>;
 }) {
+  // Define the state for the selected categories.
   const [selectedCategories, setSelectedCategories] = useState<
     Record<string, string>
   >({});
 
+  // Set the initial categories for the selected purchases.
   useEffect(() => {
+    // Initialize the initial categories object.
     const initialCategories: Record<string, string> = {};
+    // Iterate over the selected purchases and set the initial category.
     selectedPurchases.forEach(purchase => {
       const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
       if (firstCategory) {
         initialCategories[purchase.transaction_ID] = firstCategory;
       }
     });
+    // Set the selected purchases category.
     setSelectedCategories(initialCategories);
   }, [selectedPurchases, categorizedResults]);
 
+  // Define the function to handle category changes for the purchases.
   const handleCategoryChange = (purchaseId: string, category: string) => {
+    // Update the selected purchases category.
     setSelectedCategories({
       ...selectedCategories,
       [purchaseId]: category,
     });
   };
 
+  // Define the function to handle saving the selected categories (Currently Logging).
   const handleSave = () => {
     console.log(selectedCategories);
   };
