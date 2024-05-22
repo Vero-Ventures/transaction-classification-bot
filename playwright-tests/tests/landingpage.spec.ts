@@ -75,3 +75,29 @@ test('User sign-in functionality', async ({ page }) => {
 
   // this will lead to phone or email verification which we will consider has passed the login test
 });
+
+test('User redirect to login page when not logged in', async ({ page }) => {
+  // Navigate to the home page
+  await page.goto('https://transaction-classification-bot.vercel.app/home');
+  await page.waitForURL(
+    'https://transaction-classification-bot.vercel.app/api/auth/signin'
+  );
+
+  // Check if the user is redirected to the login page
+  const signInButton = await page.$('text=Intuit Sign-In');
+  expect(signInButton).toBeTruthy();
+});
+
+test('User remains on home page when already logged in', async ({ page }) => {
+  // Navigate to the home page
+  await page.goto('https://transaction-classification-bot.vercel.app/home');
+
+  // Check if specific elements unique to the home page are present
+  const homePageElement = await page.$('text=My Expenses');
+  expect(homePageElement).toBeTruthy();
+
+  // Check if the URL remains on the home page
+  expect(page.url()).toBe(
+    'https://transaction-classification-bot.vercel.app/home'
+  );
+});
