@@ -7,6 +7,7 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    // Define screen sizes for tailwind rules.
     screens: {
       mb: '480px',
       sm: '640px',
@@ -16,6 +17,7 @@ const config: Config = {
       '2xl': '1536px',
     },
     extend: {
+      // Define custom spacing for tailwind rules.
       spacing: {
         120: '460px',
       },
