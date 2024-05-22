@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import Navbar from '@/components/navbar';
 import './globals.css';
-import SignOutButton from '@/components/signout-button';
 
 export const metadata: Metadata = {
   title: 'Transaction Classification Bot',
@@ -15,10 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <nav className="bg-gray-800 py-4 flex justify-between items-center px-6 sticky top-0 z-50">
-          <div className="text-white">{metadata.title as React.ReactNode}</div>
-          <SignOutButton />
-        </nav>
+        <Navbar />
         {children}
       </body>
     </html>
