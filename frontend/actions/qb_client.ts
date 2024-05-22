@@ -21,7 +21,7 @@ export async function create_qb_object() {
     oauthToken,
     false,
     realmId,
-    false,
+    true,
     true,
     null,
     '2.0',
