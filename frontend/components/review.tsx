@@ -44,15 +44,17 @@ export default function ReviewPage({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto w-11/12 py-8">
       <h1 className="text-3xl font-bold mb-4">Results</h1>
       <div className="overflow-x-auto">
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
-          onClick={handleSave}>
-          Save
-        </button>
-        <div className="border border-gray-700 rounded-lg overflow-hidden">
+        <div className="flex flex-col w-full px-4 sm:flex-row">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg min-w-24"
+            onClick={handleSave}>
+            Save
+          </button>
+        </div>
+        <div className="border border-gray-700 rounded-lg overflow-x-scroll sm:overflow-hidden">
           <table className="w-full table-auto divide-y divide-gray-200 dark:divide-neutral-700">
             <thead className="bg-gray-100">
               <tr>
@@ -98,8 +100,8 @@ export default function ReviewPage({
                       <span className="text-red-500">No Matches Found</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
-                    ${purchase.amount}
+                  <td className="px-4 py-2 min-w-24 font-medium text-gray-800">
+                    -${Math.abs(purchase.amount).toFixed(2)}
                   </td>
                 </tr>
               ))}
