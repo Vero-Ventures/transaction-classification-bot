@@ -98,8 +98,6 @@ test('Filter by date', async ({ page }) => {
     }
     return true;
   });
-  await page.pause();
-
   expect(areDatesSortedAscending).toBeTruthy();
 });
 
@@ -132,4 +130,81 @@ test('Filter by total', async ({ page }) => {
   });
 
   expect(isTotalSortedAscending).toBeTruthy();
+});
+
+test('Set the date input value, update table and verify search message', async ({
+  page,
+}) => {
+  const info = {
+    USER_EMAIL: config.USER_EMAIL,
+    USER_PASSWORD: config.USER_PASSWORD,
+  };
+
+  await authenticate(page, info);
+  await page.waitForTimeout(3000);
+
+  // Set the date input to a different date
+  await page.fill('input[type="date"]#start', '2024-04-23');
+  const dateValue = await page.$eval(
+    'input[type="date"]#start',
+    (el: HTMLInputElement) => el.value
+  );
+  expect(dateValue).toBe('2024-04-23');
+  await page.click('div.container');
+
+  // Check if the "Searching . . ." message is visible
+  await expect(page.locator('#noTransactions')).toBeVisible();
+
+  await page.waitForSelector('#purchaseTable tr');
+
+  // Verify that the "Searching . . ." message disappears
+  await expect(page.locator('#noTransactions')).toBeHidden();
+
+  // Verify that the dates are within the new date range
+  const dateCells = await page.$$eval('#purchaseTable td:nth-child(2)', cells =>
+    cells.map(cell => new Date(cell.textContent.trim()))
+  );
+  // Check if the dates are sorted in ascending order
+  const isSortedAscending = dateCells.every((date, i) => {
+    if (i === 0) return true;
+    return date >= dateCells[i - 1];
+  });
+
+  // Check if the dates are sorted in ascending order
+  expect(isSortedAscending).toBeTruthy();
+});
+
+test('Check if No transaction found message exists when no data in table', async ({
+  page,
+}) => {
+  const info = {
+    USER_EMAIL: config.USER_EMAIL,
+    USER_PASSWORD: config.USER_PASSWORD,
+  };
+
+  await authenticate(page, info);
+  await page.waitForTimeout(3000); // Ensure that the data is fully loaded
+
+  // Set the start date input to a different date
+  await page.fill('input[type="date"]#start', '2024-05-21');
+
+  // Click the container div to trigger the update
+  await page.click('div.container');
+  // Check if the "Searching . . ." message is visible
+  await expect(page.locator('#noTransactions')).toBeVisible();
+
+  await page.waitForSelector('#purchaseTable tr');
+  // Wait for the table to update or the "No transactions found." message to appear
+  const noTransactionsMessage = page.locator('#noTransactions', {
+    hasText: 'No transactions found.',
+  });
+  const tableRows = page.locator('#purchaseTable tr');
+  await Promise.race([
+    noTransactionsMessage.waitFor({ state: 'visible' }),
+    tableRows.first().waitFor({ state: 'attached' }),
+  ]);
+
+  // Check if the "No transactions found." message is displayed
+  const noTransactionsFound = await noTransactionsMessage.isVisible();
+  expect(noTransactionsFound).toBeTruthy();
 });
