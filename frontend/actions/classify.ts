@@ -1,5 +1,6 @@
 'use server';
-import { CategorizedResult, Transaction } from '@/types/Transaction';
+import { Transaction } from '@/types/Transaction';
+import { CategorizedResult } from '@/types/CategorizedResult';
 import { Account } from '@/types/Account';
 import { Category } from '@/types/Category';
 import { get_accounts } from '@/actions/quickbooks';
