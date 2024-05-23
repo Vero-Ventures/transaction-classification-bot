@@ -48,6 +48,14 @@ export default function SelectionPage({
   // Fetch the transactions from the backend when date is updated.
   const handleDateUpdate = async () => {
     try {
+      // If start date or end date are before 2000, set them to 2000.
+      if (new Date(startDate) < new Date('2000-01-01')) {
+        setStartDate('2000-01-01');
+      }
+      if (new Date(endDate) < new Date('2000-01-01')) {
+        setEndDate('2000-01-01');
+      }
+
       // Display a loading message while fetching transactions.
       setDocumentMessage('Searching . . .');
       setDocumentMessageClass(
@@ -88,11 +96,7 @@ export default function SelectionPage({
   // Update the start date if the start date is before the end date.
   // Also check that the start date is in the past but after 2000.
   const handleStartDateChange = (event: string) => {
-    if (
-      new Date(event) < new Date(endDate) &&
-      new Date(event) > new Date('2000-01-01') &&
-      new Date(event) < new Date()
-    ) {
+    if (new Date(event) < new Date(endDate) && new Date(event) < new Date()) {
       setStartDate(event);
     }
   };
@@ -100,11 +104,7 @@ export default function SelectionPage({
   // Update the end date if the end date is after the start date.
   // Also check that the end date is in the past but after 2000.
   const handleEndDateChange = (event: string) => {
-    if (
-      new Date(event) > new Date(startDate) &&
-      new Date(event) > new Date('2000-01-01') &&
-      new Date(event) < new Date()
-    ) {
+    if (new Date(event) > new Date(startDate) && new Date(event) < new Date()) {
       setEndDate(event);
     }
   };
