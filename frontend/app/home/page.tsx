@@ -35,10 +35,24 @@ export default function HomePage() {
   }, []);
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
-    const categorizedOnly: Transaction[] = filterCategorized(purchases);
+    // Get a reference for the current date and the date 5 years ago.
+    const today = new Date();
+
+    const five_years_ago = new Date(
+      today.getFullYear() - 5,
+      today.getMonth(),
+      today.getDate()
+    );
+    // Convert the dates to strings in the format 'YYYY-MM-DD'.
+    const start_date = today.toISOString().split('T')[0];
+    const end_date = five_years_ago.toISOString().split('T')[0];
+    // Get the past transactions from QuickBooks.
+    const pastTransactions = await get_transactions(start_date, end_date);
+    const pastTransactionsResult = JSON.parse(pastTransactions);
+    // Pass the transactions to classify and the past 5 years of transactions.
     const result: { [transaction_ID: string]: string[] } | { error: string } =
       await classifyTransactions(
-        categorizedOnly,
+        filterCategorized(pastTransactionsResult),
         filterUncategorized(selectedPurchases)
       );
     if (result.error) {
