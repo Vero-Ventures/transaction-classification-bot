@@ -1,3 +1,4 @@
+import { Category } from '@/types/Category';
 export type Transaction = {
   // date: YYYY-MM-DD.
   date: string;
@@ -15,5 +16,6 @@ export type Transaction = {
 export type CategorizedResult = {
   // transaction_ID: Integer as a string.
   transaction_ID: string;
-  possibleCategories: string[];
+  possibleCategories: Category[];
+  classifiedBy: string;
 };

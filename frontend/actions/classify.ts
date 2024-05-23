@@ -1,6 +1,7 @@
 'use server';
-import { Transaction, CategorizedResult } from '@/types/Transaction';
+import { CategorizedResult, Transaction } from '@/types/Transaction';
 import { Account } from '@/types/Account';
+import { Category } from '@/types/Category';
 import { get_accounts } from '@/actions/quickbooks';
 import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
@@ -10,21 +11,9 @@ export const classifyTransactions = async (
   uncategorizedTransactions: Transaction[]
 ) => {
   try {
-    const validCategoriesResponse = JSON.parse(await get_accounts());
-    const validCategories = validCategoriesResponse
-      .slice(1)
-      .map((category: Account) => category.name);
-    console.log(validCategories);
+    const validCategories: Category[] = await fetchValidCategories();
 
-    if (!Array.isArray(categorizedTransactions)) {
-      throw new Error('categorizedTransactions is not an array');
-    }
-
-    const fuse = new Fuse(categorizedTransactions, {
-      includeScore: true,
-      threshold: 0.3,
-      keys: ['name'],
-    });
+    const fuse = createFuseInstance(categorizedTransactions);
 
     const results: CategorizedResult[] = [];
     const noMatches: Transaction[] = [];
@@ -36,16 +25,21 @@ export const classifyTransactions = async (
           matches.map(match => match.item.category)
         );
 
-        const validPossibleCategories = Array.from(
-          possibleCategoriesSet
-        ).filter(category => validCategories.includes(category));
+        const possibleValidCategories = Array.from(possibleCategoriesSet)
+          .map(possibleCategory =>
+            validCategories.find(
+              validAccount => validAccount.name === possibleCategory
+            )
+          )
+          .filter((category): category is Category => Boolean(category));
 
-        if (validPossibleCategories.length === 0) {
+        if (possibleValidCategories.length === 0) {
           noMatches.push(uncategorized);
         } else {
           results.push({
             transaction_ID: uncategorized.transaction_ID,
-            possibleCategories: Array.from(possibleCategoriesSet),
+            possibleCategories: possibleValidCategories,
+            classifiedBy: 'Fuzzy or Exact Match by Fuse',
           });
         }
       } catch (error) {
@@ -58,50 +52,52 @@ export const classifyTransactions = async (
       }
     });
 
-    if (noMatches.length > 0) {
-      let llmApiResponse;
-      try {
-        llmApiResponse = await sendToLLMApi(noMatches, validCategories);
-        if (llmApiResponse) {
-          llmApiResponse.forEach((llmResult: CategorizedResult) => {
-            results.push({
-              transaction_ID: llmResult.transaction_ID,
-              possibleCategories: llmResult.possibleCategories,
-            });
-          });
-        }
-      } catch (error) {
-        console.log('Error from LLM API usage: ', error);
-      }
-    }
+    // if (noMatches.length > 0) {
+    //   let llmApiResponse;
+    //   try {
+    //     llmApiResponse = await sendToLLMApi(noMatches, validAccounts);
+    //     if (llmApiResponse) {
+    //       llmApiResponse.forEach((llmResult: CategorizedResult) => {
+    //         results.push({
+    //           transaction_ID: llmResult.transaction_ID,
+    //           possibleCategories: llmResult.possibleCategories,
+    //           classifiedBy: 'LLM',
+    //         });
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.log('Error from LLM API usage: ', error);
+    //   }
+    // }
 
-    const resultsObject = results.reduce(
-      (acc, curr) => {
-        acc[curr.transaction_ID] = curr.possibleCategories;
-        return acc;
-      },
-      {} as { [transaction_ID: string]: string[] }
-    );
-
-    console.log(
-      'Successfully retrieved categorized transactions:',
-      resultsObject
-    );
-    return resultsObject;
+    return JSON.stringify(results, null, 2);
   } catch (error) {
     console.error('Error classifying transactions:', error);
-    return { error: 'Error getting categorized transactions:' };
+    return JSON.stringify({ error: 'Error getting categorized transactions:' });
   }
 };
 
-const sendToLLMApi = async (
-  uncategorizedTransactions: Transaction[],
-  validCategories: string[]
-) => {
-  const response: CategorizedResult[] = await batchQueryLLM(
-    uncategorizedTransactions,
-    validCategories
-  );
-
-  return response;
+const createFuseInstance = (categorizedTransactions: Transaction[]) => {
+  return new Fuse(categorizedTransactions, {
+    includeScore: true,
+    threshold: 0.3,
+    keys: ['name'],
+  });
 };
+
+const fetchValidCategories = async (): Promise<Category[]> => {
+  const validCategoriesResponse = JSON.parse(await get_accounts());
+  return validCategoriesResponse.slice(1).map((category: Account): Category => {
+    return { id: category.id, name: category.name };
+  });
+};
+
+// const sendToLLMApi = async (
+//   uncategorizedTransactions: Transaction[],
+//   validCategories: ValidAccount[]
+// ): Promise<CategorizedResult[]> => {
+//   return await batchQueryLLM(
+//     uncategorizedTransactions,
+//     validCategories
+//   );
+// };

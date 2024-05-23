@@ -154,6 +154,7 @@ export async function batchQueryLLM(
     results.push({
       transaction_ID,
       possibleCategories,
+      classifiedBy: 'LLM',
     });
   }
 
