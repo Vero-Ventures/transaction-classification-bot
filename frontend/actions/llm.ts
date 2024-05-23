@@ -3,6 +3,7 @@
 import { Transaction, CategorizedResult } from '@/types/Transaction';
 import { fetchCustomSearch } from './customsearch';
 import { fetchKnowledgeGraph } from './knowledgegraph';
+import { Category } from '@/types/Category';
 
 const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
@@ -151,9 +152,13 @@ export async function batchQueryLLM(
         .map(category => lowercaseCategoryMap[category]);
     }
 
+    const tempList: Category[] = possibleCategories.map(category => ({
+      id: '1',
+      name: category,
+    }));
     results.push({
       transaction_ID,
-      possibleCategories,
+      possibleCategories: tempList,
       classifiedBy: 'LLM',
     });
   }
