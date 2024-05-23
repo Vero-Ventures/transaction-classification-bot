@@ -21,6 +21,14 @@ export default function Page() {
   });
 
   const handleQuickBooksSignIn = async () => {
+    // Check if user is already signed in.
+    const session = await getSession();
+    if (session) {
+      // Redirect to the home page if user is already signed in.
+      window.location.href = '/home';
+      return;
+    }
+
     // Sign in with QuickBooks and catch any errors.
     try {
       // Initiating authentication with QuickBooks provider and set the callback URL.
