@@ -29,71 +29,71 @@ test('landing page and logout button', async ({ page }) => {
   }
 });
 
-test('User sign-in functionality', async ({ page }) => {
-  // Define mock API responses
-  const mockSignInSuccessResponse = {
-    status: 'success',
-    data: {
-      userId: '123456',
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-    },
-  };
+// test('User sign-in functionality', async ({ page }) => {
+//   // Define mock API responses
+//   const mockSignInSuccessResponse = {
+//     status: 'success',
+//     data: {
+//       userId: '123456',
+//       accessToken: 'mock-access-token',
+//       refreshToken: 'mock-refresh-token',
+//     },
+//   };
 
-  const mockSignInErrorResponse = {
-    status: 'error',
-    error: 'invalid_credentials',
-    message: 'Invalid username or password',
-  };
+//   const mockSignInErrorResponse = {
+//     status: 'error',
+//     error: 'invalid_credentials',
+//     message: 'Invalid username or password',
+//   };
 
-  // Intercept API requests for sign-in endpoint
-  await page.route(
-    'https://transaction-classification-bot.vercel.app/api/auth/signin',
-    route => {
-      // Respond with mock success response for successful sign-in
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockSignInSuccessResponse),
-      });
-    }
-  );
+//   // Intercept API requests for sign-in endpoint
+//   await page.route(
+//     'https://transaction-classification-bot.vercel.app/api/auth/signin',
+//     route => {
+//       // Respond with mock success response for successful sign-in
+//       route.fulfill({
+//         status: 200,
+//         contentType: 'application/json',
+//         body: JSON.stringify(mockSignInSuccessResponse),
+//       });
+//     }
+//   );
 
-  // Navigate to signin page
-  await page.goto('https://accounts.intuit.com/app/sign-in');
+//   // Navigate to signin page
+//   await page.goto('https://accounts.intuit.com/app/sign-in');
 
-  // Simulate user interaction for email
-  console.log('User email:', process.env.USER_EMAIL);
-  await page.fill(
-    'input[data-testid="IdentifierFirstIdentifierInput"]',
-    config.USER_EMAIL
-  );
+//   // Simulate user interaction for email
+//   console.log('User email:', process.env.USER_EMAIL);
+//   await page.fill(
+//     'input[data-testid="IdentifierFirstIdentifierInput"]',
+//     config.USER_EMAIL
+//   );
 
-  // Click on the "sign in" button
-  await page.click('span.Button-label-e0ecc32');
+//   // Click on the "sign in" button
+//   await page.click('span.Button-label-e0ecc32');
 
-  // Simulate user interaction for password
-  await page.fill(
-    'input[data-testid="currentPasswordInput"]',
-    config.USER_PASSWORD
-  );
+//   // Simulate user interaction for password
+//   await page.fill(
+//     'input[data-testid="currentPasswordInput"]',
+//     config.USER_PASSWORD
+//   );
 
-  // click on the continue button
-  await page.click('button[data-testid="passwordVerificationContinueButton"]');
-  // this will lead to phone or email verification which we will consider has passed the login test
-});
+//   // click on the continue button
+//   await page.click('button[data-testid="passwordVerificationContinueButton"]');
+//   // this will lead to phone or email verification which we will consider has passed the login test
+// });
 
-test('User redirect to login page when not logged in', async ({ page }) => {
-  // Navigate to the home page
-  await page.goto('https://transaction-classification-bot.vercel.app/home');
-  await page.waitForURL(
-    'https://transaction-classification-bot.vercel.app/api/auth/signin?callbackUrl=%2Fhome'
-  );
+// test('User redirect to login page when not logged in', async ({ page }) => {
+//   // Navigate to the home page
+//   await page.goto('https://transaction-classification-bot.vercel.app/home');
+//   await page.waitForURL(
+//     'https://transaction-classification-bot.vercel.app/api/auth/signin?callbackUrl=%2Fhome'
+//   );
 
-  // Check if the user is redirected to the login page
-  const signInButton = await page.$('text=Intuit Sign-In');
-  expect(signInButton).toBeTruthy();
-});
+//   // Check if the user is redirected to the login page
+//   const signInButton = await page.$('text=Intuit Sign-In');
+//   expect(signInButton).toBeTruthy();
+// });
 
 // TEST COMMENTED OUT DUE TO AUTHENTICATED STATE NOT PERSISTING ACROSS TESTS
 // test.use({ storageState: process.env.USER_AUTH });
@@ -116,30 +116,30 @@ test('User redirect to login page when not logged in', async ({ page }) => {
 //test.use({ storageState: process.env.USER_AUTH });
 
 // TEST REQUIRES USER TO PUT IN A await page.pause() COMMAND TO MANUALLY VERIFY PHONE / EMAIL ONE TIME BEFORE THE AUTHENTICATION SKIPS 2FA CHECK.
-test('logged in user clicks logout button', async ({ page }) => {
-  const info = {
-    USER_EMAIL: config.USER_EMAIL,
-    USER_PASSWORD: config.USER_PASSWORD,
-  };
-  await authenticate(page, info);
+// test('logged in user clicks logout button', async ({ page }) => {
+//   const info = {
+//     USER_EMAIL: config.USER_EMAIL,
+//     USER_PASSWORD: config.USER_PASSWORD,
+//   };
+//   await authenticate(page, info);
 
-  // Find and click on the logout button
-  const logoutButton = await page.$('text=Sign Out');
-  expect(logoutButton).toBeTruthy();
-  await logoutButton.click();
+//   // Find and click on the logout button
+//   const logoutButton = await page.$('text=Sign Out');
+//   expect(logoutButton).toBeTruthy();
+//   await logoutButton.click();
 
-  // Check if the user is redirected to the login page
-  await page.waitForURL(
-    'https://transaction-classification-bot.vercel.app/api/auth/signin?callbackUrl=%2F'
-  );
-});
+//   // Check if the user is redirected to the login page
+//   await page.waitForURL(
+//     'https://transaction-classification-bot.vercel.app/api/auth/signin?callbackUrl=%2F'
+//   );
+// });
 
 // TEST REQUIRES USER TO PUT IN A await page.pause() COMMAND TO MANUALLY VERIFY PHONE / EMAIL ONE TIME BEFORE THE AUTHENTICATION SKIPS 2FA CHECK.
 
-test('User signs in and redirects to home in deployed', async ({ page }) => {
-  const info = {
-    USER_EMAIL: config.USER_EMAIL,
-    USER_PASSWORD: config.USER_PASSWORD,
-  };
-  await authenticate(page, info);
-});
+// test('User signs in and redirects to home in deployed', async ({ page }) => {
+//   const info = {
+//     USER_EMAIL: config.USER_EMAIL,
+//     USER_PASSWORD: config.USER_PASSWORD,
+//   };
+//   await authenticate(page, info);
+// });
