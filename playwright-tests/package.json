@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test"
+    "test": "npx playwright test",
+    "test:playwright": "npx nyc --reporter=lcov --reporter=text npx playwright test",
+    "testall": "npm run test:playwright && cd ../backend && coverage run -m pytest && coverage combine && coverage report && coverage lcov -o ../playwright-tests/coverage/python-lcov.info"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +18,23 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5"
+  },
+  "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
+    "all": true,
+    "include": [
+      "../frontend/src/**/*.{ts,tsx}",
+      "../backend/src/**/*.py"
+    ],
+    "exclude": [
+      "../playwright-tests/**",
+      "playwright.config.ts"
+    ],
+    "reporter": [
+      "lcov",
+      "text",
+      "html"
+    ],
+    "report-dir": "./coverage"
   }
 }
