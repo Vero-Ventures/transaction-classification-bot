@@ -10,12 +10,14 @@ import {
 import { classifyTransactions } from '@/actions/classify';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
+import { CategorizedResult } from '@/types/CategorizedResult';
+import { ClassifiedCategory } from '@/types/Category';
 
 export default function HomePage() {
   const [purchases, setPurchases] = useState<Transaction[]>([]);
-  const [categorizedResults, setCategorizedResults] = useState<{
-    [transaction_ID: string]: string[];
-  }>({});
+  const [categorizedResults, setCategorizedResults] = useState<
+    Record<string, ClassifiedCategory[]>
+  >({});
   const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -35,17 +37,17 @@ export default function HomePage() {
   }, []);
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
-    const categorizedOnly: Transaction[] = filterCategorized(purchases);
-    const result: { [transaction_ID: string]: string[] } | { error: string } =
+    const result: Record<string, ClassifiedCategory[]> | { error: string } =
       await classifyTransactions(
-        categorizedOnly,
+        filterCategorized(purchases),
         filterUncategorized(selectedPurchases)
       );
-    if (result.error) {
+    if ('error' in result) {
       console.error('Error classifying transactions:', result.error);
       return;
     }
-    setCategorizedResults(result as { [transaction_ID: string]: string[] });
+    console.log(result);
+    setCategorizedResults(result);
   };
 
   return categorizedResults && Object.keys(categorizedResults).length > 0 ? (
