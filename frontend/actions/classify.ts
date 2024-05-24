@@ -1,10 +1,9 @@
 'use server';
 import { Transaction } from '@/types/Transaction';
-import { CategorizedResult } from '@/types/CategorizedResult';
 import { Account } from '@/types/Account';
-import { Category } from '@/types/Category';
+import { Category, ClassifiedCategory } from '@/types/Category';
 import { get_accounts } from '@/actions/quickbooks';
-import { batchQueryLLM } from '@/actions/llm';
+// import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
@@ -16,7 +15,7 @@ export const classifyTransactions = async (
 
     const fuse = createFuseInstance(categorizedTransactions);
 
-    const results: CategorizedResult[] = [];
+    const results: Record<string, ClassifiedCategory[]> = {};
     const noMatches: Transaction[] = [];
 
     uncategorizedTransactions.forEach(uncategorized => {
@@ -32,16 +31,16 @@ export const classifyTransactions = async (
               validAccount => validAccount.name === possibleCategory
             )
           )
-          .filter((category): category is Category => Boolean(category));
+          .filter((category): category is Category => Boolean(category))
+          .map(category => ({
+            ...category,
+            classifiedBy: 'Fuzzy or Exact Match by Fuse',
+          }));
 
         if (possibleValidCategories.length === 0) {
           noMatches.push(uncategorized);
         } else {
-          results.push({
-            transaction_ID: uncategorized.transaction_ID,
-            possibleCategories: possibleValidCategories,
-            classifiedBy: 'Fuzzy or Exact Match by Fuse',
-          });
+          results[uncategorized.transaction_ID] = possibleValidCategories;
         }
       } catch (error) {
         console.error(
@@ -71,10 +70,10 @@ export const classifyTransactions = async (
       }
     }
 
-    return JSON.stringify(results, null, 2);
+    return results;
   } catch (error) {
     console.error('Error classifying transactions:', error);
-    return JSON.stringify({ error: 'Error getting categorized transactions:' });
+    return { error: 'Error getting categorized transactions:' };
   }
 };
 

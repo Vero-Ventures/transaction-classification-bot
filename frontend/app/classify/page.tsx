@@ -72,7 +72,7 @@ export default function TransactionsPage() {
         uncategorizedTransactions
       );
       console.log(result);
-      setResponse(result);
+      setResponse(JSON.stringify(result, null, 2));
     } catch (error) {
       console.error('Error:', error);
       setResponse('Error occurred. Please try again.');
