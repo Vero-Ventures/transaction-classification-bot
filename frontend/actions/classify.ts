@@ -2,8 +2,9 @@
 import { Transaction } from '@/types/Transaction';
 import { Account } from '@/types/Account';
 import { Category, ClassifiedCategory } from '@/types/Category';
+import { CategorizedResult } from '@/types/CategorizedResult';
 import { get_accounts } from '@/actions/quickbooks';
-// import { batchQueryLLM } from '@/actions/llm';
+import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
@@ -58,11 +59,11 @@ export const classifyTransactions = async (
         llmApiResponse = await sendToLLMApi(noMatches, validCategories);
         if (llmApiResponse) {
           llmApiResponse.forEach((llmResult: CategorizedResult) => {
-            results.push({
-              transaction_ID: llmResult.transaction_ID,
-              possibleCategories: llmResult.possibleCategories,
-              classifiedBy: 'LLM',
-            });
+            results[llmResult.transaction_ID] =
+              llmResult.possibleCategories.map(category => ({
+                ...category,
+                classifiedBy: 'LLM API',
+              }));
           });
         }
       } catch (error) {
