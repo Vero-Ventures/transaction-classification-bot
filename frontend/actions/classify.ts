@@ -1,10 +1,9 @@
 'use server';
 import { Transaction } from '@/types/Transaction';
-import { CategorizedResult } from '@/types/CategorizedResult';
 import { Account } from '@/types/Account';
 import { Category } from '@/types/Category';
 import { get_accounts } from '@/actions/quickbooks';
-import { batchQueryLLM } from '@/actions/llm';
+// import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
 type ClassifiedCategory = {
@@ -80,7 +79,7 @@ export const classifyTransactions = async (
     return results;
   } catch (error) {
     console.error('Error classifying transactions:', error);
-    return JSON.stringify({ error: 'Error getting categorized transactions:' });
+    return { error: 'Error getting categorized transactions:' };
   }
 };
 
