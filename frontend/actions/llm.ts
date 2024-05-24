@@ -1,6 +1,7 @@
 'use server';
 
-import { Transaction, CategorizedResult } from '@/types/Transaction';
+import { Transaction } from '@/types/Transaction';
+import { CategorizedResult } from '@/types/CategorizedResult';
 import { fetchCustomSearch } from './customsearch';
 import { fetchKnowledgeGraph } from './knowledgegraph';
 import { Category } from '@/types/Category';
