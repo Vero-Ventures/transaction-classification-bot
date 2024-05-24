@@ -1,16 +1,10 @@
 'use server';
 import { Transaction } from '@/types/Transaction';
 import { Account } from '@/types/Account';
-import { Category } from '@/types/Category';
+import { Category, ClassifiedCategory } from '@/types/Category';
 import { get_accounts } from '@/actions/quickbooks';
 // import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
-
-type ClassifiedCategory = {
-  id: string;
-  name: string;
-  classifiedBy: string;
-};
 
 export const classifyTransactions = async (
   categorizedTransactions: Transaction[],
