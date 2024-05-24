@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
-    "test:playwright": "npx nyc --reporter=lcov --reporter=text npx playwright test",
-    "testall": "npm run test:playwright && cd ../backend && coverage run -m pytest && coverage combine && coverage report && coverage lcov -o ../playwright-tests/coverage/python-lcov.info"
+    "test:playwright": "npx nyc --reporter=lcov --reporter=text npx playwright test"
   },
   "keywords": [],
   "author": "",

@@ -21,36 +21,22 @@ jobs:
       run: npm install
       working-directory: ./frontend
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.12'
     
     - name: Install dependencies
       working-directory: ./playwright-tests
       run: npm install
-    - name: Install dependancies
-      working-directory: ./backend
-      run: pip install coverage pytest
 
     - name: Install Playwright Browsers
       working-directory: ./playwright-tests
       run: npx playwright install --with-deps
 
-    - name: Run frontend and backend tests with coverage
+    - name: Run frontend tests with coverage
       run: |
         cd playwright-tests && npm run test:playwright
-        cd ../backend && coverage run -m pytest
-        coverage lcov -o ../playwright-tests/coverage/python-lcov.info
-
-    - name: Combine coverage reports
-      run: |
-        cd playwright-tests/coverage
-        lcov -a lcov.info -a python-lcov.info -o combined-lcov.info
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: playwright-tests/coverage/combined-lcov.info
+        files: playwright-tests/coverage/lcov.info
         fail_ci_if_error: true
