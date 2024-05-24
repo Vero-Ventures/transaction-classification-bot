@@ -77,7 +77,7 @@ export const classifyTransactions = async (
     //   }
     // }
 
-    return JSON.stringify(results, null, 2);
+    return results;
   } catch (error) {
     console.error('Error classifying transactions:', error);
     return JSON.stringify({ error: 'Error getting categorized transactions:' });
