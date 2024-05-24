@@ -53,23 +53,23 @@ export const classifyTransactions = async (
       }
     });
 
-    // if (noMatches.length > 0) {
-    //   let llmApiResponse;
-    //   try {
-    //     llmApiResponse = await sendToLLMApi(noMatches, validAccounts);
-    //     if (llmApiResponse) {
-    //       llmApiResponse.forEach((llmResult: CategorizedResult) => {
-    //         results.push({
-    //           transaction_ID: llmResult.transaction_ID,
-    //           possibleCategories: llmResult.possibleCategories,
-    //           classifiedBy: 'LLM',
-    //         });
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.log('Error from LLM API usage: ', error);
-    //   }
-    // }
+    if (noMatches.length > 0) {
+      let llmApiResponse;
+      try {
+        llmApiResponse = await sendToLLMApi(noMatches, validCategories);
+        if (llmApiResponse) {
+          llmApiResponse.forEach((llmResult: CategorizedResult) => {
+            results.push({
+              transaction_ID: llmResult.transaction_ID,
+              possibleCategories: llmResult.possibleCategories,
+              classifiedBy: 'LLM',
+            });
+          });
+        }
+      } catch (error) {
+        console.log('Error from LLM API usage: ', error);
+      }
+    }
 
     return JSON.stringify(results, null, 2);
   } catch (error) {
@@ -93,12 +93,9 @@ const fetchValidCategories = async (): Promise<Category[]> => {
   });
 };
 
-// const sendToLLMApi = async (
-//   uncategorizedTransactions: Transaction[],
-//   validCategories: ValidAccount[]
-// ): Promise<CategorizedResult[]> => {
-//   return await batchQueryLLM(
-//     uncategorizedTransactions,
-//     validCategories
-//   );
-// };
+const sendToLLMApi = async (
+  uncategorizedTransactions: Transaction[],
+  validCategories: Category[]
+): Promise<CategorizedResult[]> => {
+  return await batchQueryLLM(uncategorizedTransactions, validCategories);
+};

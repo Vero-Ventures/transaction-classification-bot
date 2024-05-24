@@ -1,79 +1,18 @@
 'use server';
 
-import { Transaction, CategorizedResult } from '@/types/Transaction';
+import { Transaction } from '@/types/Transaction';
+import { CategorizedResult } from '@/types/CategorizedResult';
+import { Category } from '@/types/Category';
 import { fetchCustomSearch } from './customsearch';
 import { fetchKnowledgeGraph } from './knowledgegraph';
-import { Category } from '@/types/Category';
 
 const url = process.env.LLM_API_URL || '';
 const apiKey = process.env.LLM_API_KEY || '';
 
 const basePrompt =
-  'Given a list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
-const defaultCategories = [
-  'Advertising',
-  'Automobile',
-  'Fuel',
-  'Bank Charges',
-  'Commission & fees',
-  'Disposal Fees',
-  'Dues & Subscriptions',
-  'Equipment Rental',
-  'Insurance',
-  'Workers Compensation',
-  'Job Expenses',
-  'Cost of Labour',
-  'Installation',
-  'Maintenance and Repairs',
-  'Equipment Rental',
-  'Job Materials',
-  'Permits',
-  'Legal & Professional Fees',
-  'Accounting',
-  'Bookkeeper',
-  'Lawyer',
-  'Maintenance and Repair',
-  'Building Repairs',
-  'Computer Repairs',
-  'Equipment Repairs',
-  'Meals and Entertainment',
-  'Office Expenses',
-  'Promotional',
-  'Purchases',
-  'Rent or Lease',
-  'Stationary & Printing',
-  'Supplies',
-  'Taxes & Licenses',
-  'Unapplied Cash Bill Payment Expense',
-  'Uncategorized Expense',
-  'Utilities',
-  'Gas and Electric',
-  'Telephone',
-  'Depreciation',
-  'Miscellaneous',
-  'Penalties & Settlements',
-];
+  'Using only provided list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
 
-export async function queryLLM(
-  query: string,
-  context: string,
-  name?: string,
-  categories?: string[]
-) {
-  if (!context) {
-    throw new Error('Context is required');
-  }
-
-  if (!query && name) {
-    categories = categories || defaultCategories;
-    query = basePrompt
-      .replace('$NAME', name)
-      .replace('$CATEGORIES', categories.join(', '));
-    console.log('Query:', query);
-  } else if (!query) {
-    throw new Error('Query or name is required');
-  }
-
+export async function queryLLM(query: string, context: string) {
   try {
     const response = await fetch(`${url}/generate`, {
       method: 'POST',
@@ -95,28 +34,26 @@ export async function queryLLM(
 
 export async function batchQueryLLM(
   transactions: Transaction[],
-  categories?: string[]
+  categories: Category[]
 ) {
-  const threshold = 100;
-  categories = categories || defaultCategories;
-  const lowercaseCategoryMap = categories.reduce(
-    (map, category) => {
-      map[category.toLowerCase()] = category;
-      return map;
-    },
-    {} as { [key: string]: string }
-  );
+  const threshold = 100; // resultScore threshold for Knowledge Graph API
+
+  // Extract category names from Category objects
+  const validCategoriesNames = categories.map(category => category.name);
+  console.log('Categories Names:', validCategoriesNames);
 
   const contextPromises = transactions.map(async (transaction: Transaction) => {
     const prompt = basePrompt
       .replace('$NAME', transaction.name)
-      .replace('$CATEGORIES', categories.join(', '));
+      .replace('$CATEGORIES', validCategoriesNames.join(', '));
 
     // Fetch detailed descriptions from the Knowledge Graph API
     const kgResults = (await fetchKnowledgeGraph(transaction.name)) || [];
+    // console.log('KG Results:', kgResults);
     const descriptions = kgResults.filter(
       result => result.resultScore > threshold
     );
+    // console.log('\nDescriptions from KG:', descriptions);
 
     // Check if descriptions are over threshold, otherwise use Custom Search API snippets
     let description;
@@ -130,6 +67,8 @@ export async function batchQueryLLM(
           : 'No description available';
     }
 
+    // console.log('\nDescription:', description);
+
     return {
       transaction_ID: transaction.transaction_ID,
       prompt,
@@ -142,23 +81,27 @@ export async function batchQueryLLM(
   for (const { transaction_ID, prompt, context } of contexts) {
     const response = await queryLLM(prompt, context);
 
-    // Check if response contains a valid category from the list
-    let possibleCategories: string[] = [];
+    console.log('\nLLM raw response:', response);
 
+    // Check if response contains a valid category from the list
+    let possibleCategories: Category[] = [];
     if (response && response.response) {
       const responseText = response.response.toLowerCase();
-      possibleCategories = Object.keys(lowercaseCategoryMap)
-        .filter(category => responseText.includes(category))
-        .map(category => lowercaseCategoryMap[category]);
+
+      const possibleValidCategories = validCategoriesNames.filter(category =>
+        responseText.includes(category.toLowerCase())
+      );
+      possibleCategories = possibleValidCategories.map(
+        categoryName =>
+          categories.find(
+            category => category.name === categoryName
+          ) as Category
+      );
     }
 
-    const tempList: Category[] = possibleCategories.map(category => ({
-      id: '1',
-      name: category,
-    }));
     results.push({
       transaction_ID,
-      possibleCategories: tempList,
+      possibleCategories,
       classifiedBy: 'LLM',
     });
   }
