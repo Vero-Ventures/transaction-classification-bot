@@ -4,10 +4,24 @@ on:
     branches: [main, feature/codecov]
 jobs:
   test:
-    runs-on: ubuntu-latest
     timeout-minutes: 60
+    runs-on: ubuntu-latest
     steps:
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "20.x"
+    # Might want to run backend + LLM here eventually; current setup runs fine without it
+    - name: Install dependencies
+      working-directory: ./playwright-tests
+      run: npm ci
+    - name: Install Playwright Browsers
+      working-directory: ./playwright-tests
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      working-directory: ./playwright-tests
+      run: nyc --reporter=lcov --reporter=text npx playwright test
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
