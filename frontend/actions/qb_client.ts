@@ -22,7 +22,7 @@ export async function create_qb_object() {
     false,
     realmId,
     true,
-    true,
+    false,
     null,
     '2.0',
     refreshToken
