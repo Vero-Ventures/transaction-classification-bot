@@ -63,7 +63,7 @@ const categorizedTransactions = [
 ];
 
 export default function TransactionsPage() {
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState<string>('');
 
   const handleTest = async () => {
     try {

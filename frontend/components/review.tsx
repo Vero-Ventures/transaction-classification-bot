@@ -1,21 +1,16 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
-import {
-  find_purchase,
-  get_accounts,
-  update_purchase,
-} from '@/actions/quickbooks';
-import { Account } from '@/types/Account';
+import { find_purchase, update_purchase } from '@/actions/quickbooks';
+import { ClassifiedCategory } from '@/types/Category';
 
 export default function ReviewPage({
   selectedPurchases,
   categorizedResults,
 }: {
   selectedPurchases: Transaction[];
-  categorizedResults: Record<string, string[]>;
+  categorizedResults: Record<string, ClassifiedCategory[]>;
 }) {
-  const [accounts, setAccounts] = useState<Record<string, string>>({});
   const [selectedCategories, setSelectedCategories] = useState<
     Record<string, string>
   >({});
@@ -27,7 +22,8 @@ export default function ReviewPage({
     const initializeCategories = async () => {
       const initialCategories: Record<string, string> = {};
       selectedPurchases.forEach(purchase => {
-        const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
+        const firstCategory =
+          categorizedResults[purchase.transaction_ID]?.[0]?.name;
         if (firstCategory) {
           initialCategories[purchase.transaction_ID] = firstCategory;
         }
@@ -35,19 +31,7 @@ export default function ReviewPage({
       setSelectedCategories(initialCategories);
     };
 
-    const fetchAccounts = async () => {
-      const response = JSON.parse(await get_accounts());
-      const accounts = response
-        .slice(1)
-        .reduce((acc: { [account_name: string]: string }, account: Account) => {
-          acc[account.name] = account.id;
-          return acc;
-        }, {});
-      setAccounts(accounts);
-    };
-
     initializeCategories();
-    fetchAccounts();
   }, [selectedPurchases, categorizedResults]);
 
   const handleCategoryChange = (purchaseId: string, category: string) => {
@@ -65,7 +49,7 @@ export default function ReviewPage({
           async ([transactionID, category]) => {
             const purchaseObj = await find_purchase(transactionID, false);
             if (purchaseObj) {
-              const accountID = accounts[category];
+              const accountID = categorizedResults[transactionID]?.[0]?.id;
               const result = await update_purchase(accountID, purchaseObj);
               if (result === '{}') {
                 throw new Error('Error saving purchase');
@@ -130,8 +114,8 @@ export default function ReviewPage({
                         className="border border-gray-700 rounded-lg px-2 py-1">
                         {categorizedResults[purchase.transaction_ID]?.map(
                           (category, index) => (
-                            <option key={index} value={category}>
-                              {category}
+                            <option key={index} value={category.name}>
+                              {category.name}
                             </option>
                           )
                         )}

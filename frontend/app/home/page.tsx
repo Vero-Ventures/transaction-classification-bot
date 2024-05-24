@@ -10,12 +10,13 @@ import {
 import { classifyTransactions } from '@/actions/classify';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
+import { ClassifiedCategory } from '@/types/Category';
 
 export default function HomePage() {
   const [purchases, setPurchases] = useState<Transaction[]>([]);
-  const [categorizedResults, setCategorizedResults] = useState<{
-    [transaction_ID: string]: string[];
-  }>({});
+  const [categorizedResults, setCategorizedResults] = useState<
+    Record<string, ClassifiedCategory[]>
+  >({});
   const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -48,18 +49,18 @@ export default function HomePage() {
     const end_date = five_years_ago.toISOString().split('T')[0];
     // Get the past transactions from QuickBooks.
     const pastTransactions = await get_transactions(start_date, end_date);
-    const pastTransactionsResult = JSON.parse(pastTransactions);
+    const pastTransactionsResult = JSON.parse(pastTransactions).slice(1);
     // Pass the transactions to classify and the past 5 years of transactions.
-    const result: { [transaction_ID: string]: string[] } | { error: string } =
+    const result: Record<string, ClassifiedCategory[]> | { error: string } =
       await classifyTransactions(
         filterCategorized(pastTransactionsResult),
         filterUncategorized(selectedPurchases)
       );
-    if (result.error) {
+    if ('error' in result) {
       console.error('Error classifying transactions:', result.error);
       return;
     }
-    setCategorizedResults(result as { [transaction_ID: string]: string[] });
+    setCategorizedResults(result);
   };
 
   return categorizedResults && Object.keys(categorizedResults).length > 0 ? (
