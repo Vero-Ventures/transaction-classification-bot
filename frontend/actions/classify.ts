@@ -7,6 +7,12 @@ import { get_accounts } from '@/actions/quickbooks';
 import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
+type ClassifiedCategory = {
+  id: string;
+  name: string;
+  classifiedBy: string;
+};
+
 export const classifyTransactions = async (
   categorizedTransactions: Transaction[],
   uncategorizedTransactions: Transaction[]
@@ -16,7 +22,7 @@ export const classifyTransactions = async (
 
     const fuse = createFuseInstance(categorizedTransactions);
 
-    const results: CategorizedResult[] = [];
+    const results: Record<string, ClassifiedCategory[]> = {};
     const noMatches: Transaction[] = [];
 
     uncategorizedTransactions.forEach(uncategorized => {
@@ -32,16 +38,16 @@ export const classifyTransactions = async (
               validAccount => validAccount.name === possibleCategory
             )
           )
-          .filter((category): category is Category => Boolean(category));
+          .filter((category): category is Category => Boolean(category))
+          .map(category => ({
+            ...category,
+            classifiedBy: 'Fuzzy or Exact Match by Fuse',
+          }));
 
         if (possibleValidCategories.length === 0) {
           noMatches.push(uncategorized);
         } else {
-          results.push({
-            transaction_ID: uncategorized.transaction_ID,
-            possibleCategories: possibleValidCategories,
-            classifiedBy: 'Fuzzy or Exact Match by Fuse',
-          });
+          results[uncategorized.transaction_ID] = possibleValidCategories;
         }
       } catch (error) {
         console.error(
