@@ -14,7 +14,7 @@ jobs:
     # Might want to run backend + LLM here eventually; current setup runs fine without it
     - name: Install dependencies
       working-directory: ./playwright-tests
-      run: npm ci
+      run: npm install
     - name: Install Playwright Browsers
       working-directory: ./playwright-tests
       run: npx playwright install --with-deps
