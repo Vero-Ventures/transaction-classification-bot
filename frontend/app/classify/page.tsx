@@ -71,6 +71,8 @@ export default function TransactionsPage() {
   const [categorizedTransactions, setCategorizedTransactions] = useState<
     Transaction[]
   >(defaultCategorizedTransactions);
+  const [showUncategorized, setShowUncategorized] = useState<boolean>(true);
+  const [showCategorized, setShowCategorized] = useState<boolean>(true);
 
   const parseCSV = (csvText: string): Transaction[] => {
     const lines = csvText.trim().split('\n');
@@ -148,15 +150,29 @@ export default function TransactionsPage() {
       </div>
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-2">Uncategorized Transactions</h2>
-        <pre className="border border-gray-300 rounded p-2">
-          {JSON.stringify(uncategorizedTransactions, null, 2)}
-        </pre>
+        <button
+          onClick={() => setShowUncategorized(!showUncategorized)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">
+          {showUncategorized ? 'Hide' : 'Show'}
+        </button>
+        {showUncategorized && (
+          <pre className="border border-gray-300 rounded p-2">
+            {JSON.stringify(uncategorizedTransactions, null, 2)}
+          </pre>
+        )}
       </div>
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-2">Categorized Transactions</h2>
-        <pre className="border border-gray-300 rounded p-2">
-          {JSON.stringify(categorizedTransactions, null, 2)}
-        </pre>
+        <button
+          onClick={() => setShowCategorized(!showCategorized)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-2">
+          {showCategorized ? 'Hide' : 'Show'}
+        </button>
+        {showCategorized && (
+          <pre className="border border-gray-300 rounded p-2">
+            {JSON.stringify(categorizedTransactions, null, 2)}
+          </pre>
+        )}
       </div>
       <div className="mb-8">
         <button
