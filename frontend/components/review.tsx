@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { formatDate } from '@/utils/format-date';
 import { Transaction } from '@/types/Transaction';
+import { ClassifiedCategory } from '@/types/Category';
 
 export default function ReviewPage({
   selectedPurchases,
   categorizedResults,
 }: {
   selectedPurchases: Transaction[];
-  categorizedResults: Record<string, string[]>;
+  categorizedResults: Record<string, ClassifiedCategory[]>;
 }) {
   const [selectedCategories, setSelectedCategories] = useState<
     Record<string, string>
@@ -16,7 +17,8 @@ export default function ReviewPage({
   useEffect(() => {
     const initialCategories: Record<string, string> = {};
     selectedPurchases.forEach(purchase => {
-      const firstCategory = categorizedResults[purchase.transaction_ID]?.[0];
+      const firstCategory =
+        categorizedResults[purchase.transaction_ID]?.[0]?.name;
       if (firstCategory) {
         initialCategories[purchase.transaction_ID] = firstCategory;
       }
@@ -80,8 +82,8 @@ export default function ReviewPage({
                         className="border border-gray-700 rounded-lg px-2 py-1">
                         {categorizedResults[purchase.transaction_ID]?.map(
                           (category, index) => (
-                            <option key={index} value={category}>
-                              {category}
+                            <option key={index} value={category.name}>
+                              {category.name}
                             </option>
                           )
                         )}
