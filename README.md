@@ -69,7 +69,7 @@
 
   - Step 4 (LLM Prediction): If no matches have been found by the end of the third step, the pipeline passes the transactions to the LLM. It then uses context data from Google as well as other elements to predict a classification for the transaction. This is the last step and finalizes the predicted category for each of the passed transactions.
 
-![Alt text](ReadMe_Pipeline.png)
+![Classification Pipeline](readme-resources/readme_pipeline.png)
 
 - **Technologies Used:**
 
@@ -208,9 +208,55 @@
 
 ## **Usage**
 
-- **Examples:** Examples of how to use the main features. (Just the ones you've worked on)
+- **Landing Page:**
+  The landing page is used to redirect to the home page. For logged in users, they are redirected straight to select transactions on the home page.
 
-- **Screenshots:**
+  Users who are not logged in are sent to the Intuit Sign In page. When the user finishes logging in through Intuit they will also be redirected to select transactions on the home page.
+
+- **Sign In & Company Selection:**
+  When users are first sent to the Intuit Sign In page they must log in with their email and password.
+
+  The user will then be able to select which company connected to their account to open the app with.
+
+- **Select Transactions Page:**
+  The user is shown a selection of un-categorized expense transactions from the past 2 years.
+
+  If the user wants to see transactions from a specific date range they can use the date selectors. This lets the user set the start date or the end date for the range of transactions.
+
+  The user can then sort the transactions by date or amount by clicking on the label of those columns. Clicking the label again swaps between ascending and descending.
+
+  Finally, the user can select transactions one at a time by clicking on them, causing them to be highlighted blue. The user can also mass select all transactions by clicking the button in the top left of the table. After selecting transactions the user can click the submit button on the top left to continue.
+
+- **Review Transactions & Return:**
+  Once the user has submitted their transactions and the responses have been fetched, it is time to review the classifications. The user can see all their transactions and an input element with the categorization inside.
+
+  The user can click on the input element to see a dropdown of predicted catagories. The user then selects the categorization from this dropdown that fits the transaction. Finally the user clicks the save button in the top left to update the transactions in their QuickBooks account.
+
+  Once the user has finished updating their transactions, a pop-up will appear. This pop-up informs the user that the transactions have been updated and saved and will redirect them back to the selection home page.
+
+### Landing Page
+
+![Classification Pipeline](readme-resources/readme_landing_page.png)
+
+### Sign In
+
+![Classification Pipeline](readme-resources/readme_sign_in.png)
+
+### Company Selection
+
+![Classification Pipeline](readme-resources/readme_select_company.png)
+
+### Select Transactions
+
+![Classification Pipeline](readme-resources/readme_selection.png)
+
+### Review Transactions
+
+![Classification Pipeline](readme-resources/readme_review.png)
+
+### Return to Start
+
+![Classification Pipeline](readme-resources/readme_return.png)
 
 ## **Testing**
 
