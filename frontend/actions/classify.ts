@@ -5,12 +5,18 @@ import { Category, ClassifiedCategory } from '@/types/Category';
 import { CategorizedResult } from '@/types/CategorizedResult';
 import { get_accounts } from '@/actions/quickbooks';
 import { batchQueryLLM } from '@/actions/llm';
+import {
+  addTransactions,
+  getTopCategoriesForTransaction,
+} from '@/actions/transactionDatabase';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
   categorizedTransactions: Transaction[],
   uncategorizedTransactions: Transaction[]
 ) => {
+  addTransactions(categorizedTransactions);
+
   try {
     const validCategories: Category[] = await fetchValidCategories();
 
@@ -19,7 +25,7 @@ export const classifyTransactions = async (
     const results: Record<string, ClassifiedCategory[]> = {};
     const noMatches: Transaction[] = [];
 
-    uncategorizedTransactions.forEach(uncategorized => {
+    uncategorizedTransactions.forEach(async uncategorized => {
       try {
         const matches = fuse.search(uncategorized.name);
         const possibleCategoriesSet = new Set(
@@ -39,7 +45,21 @@ export const classifyTransactions = async (
           }));
 
         if (possibleValidCategories.length === 0) {
-          noMatches.push(uncategorized);
+          const topCategories = await getTopCategoriesForTransaction(
+            uncategorized.name,
+            validCategories
+          );
+
+          if (topCategories.length === 0) {
+            noMatches.push(uncategorized);
+          } else {
+            results[uncategorized.transaction_ID] = topCategories.map(
+              category => ({
+                ...category,
+                classifiedBy: 'Database Lookup',
+              })
+            );
+          }
         } else {
           results[uncategorized.transaction_ID] = possibleValidCategories;
         }
@@ -64,6 +84,21 @@ export const classifyTransactions = async (
                 ...category,
                 classifiedBy: 'LLM API',
               }));
+
+            const transactionToAdd = uncategorizedTransactions.find(
+              transaction =>
+                transaction.transaction_ID === llmResult.transaction_ID
+            );
+
+            if (transactionToAdd) {
+              const categorizedTransactionsToAdd =
+                llmResult.possibleCategories.map(category => ({
+                  ...transactionToAdd,
+                  category: category.name,
+                }));
+
+              addTransactions(categorizedTransactionsToAdd);
+            }
           });
         }
       } catch (error) {
