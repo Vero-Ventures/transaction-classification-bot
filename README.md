@@ -236,27 +236,27 @@
 
 ### Landing Page
 
-![Classification Pipeline](readme-resources/readme_landing_page.png)
+![Landing Page](readme-resources/readme_landing_page.png)
 
 ### Sign In
 
-![Classification Pipeline](readme-resources/readme_sign_in.png)
+![Intuit Sign In](readme-resources/readme_sign_in.png)
 
 ### Company Selection
 
-![Classification Pipeline](readme-resources/readme_select_company.png)
+![Intuit Company Selection](readme-resources/readme_select_company.png)
 
 ### Select Transactions
 
-![Classification Pipeline](readme-resources/readme_selection.png)
+![Home Page - Select Transactions](readme-resources/readme_selection.png)
 
 ### Review Transactions
 
-![Classification Pipeline](readme-resources/readme_review.png)
+![Home Page - Review Classifications](readme-resources/readme_review.png)
 
 ### Return to Start
 
-![Classification Pipeline](readme-resources/readme_return.png)
+![Success Pop-Up](readme-resources/readme_return.png)
 
 ## **Testing**
 
