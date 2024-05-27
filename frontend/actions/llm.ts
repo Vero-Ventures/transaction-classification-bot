@@ -45,6 +45,7 @@ export async function queryLLM(query: string, context: string) {
 
     return response.text;
   } catch (error) {
+    // Log any errors that occur.
     console.error('Error sending query:', error);
   }
 }
@@ -59,6 +60,7 @@ export async function batchQueryLLM(
   const validCategoriesNames = categories.map(category => category.name);
   console.log('Categories Names:', validCategoriesNames);
 
+  // Generate a list of contexts for each transaction.
   const contextPromises = transactions.map(async (transaction: Transaction) => {
     const prompt = basePrompt
       .replace('$NAME', transaction.name)
@@ -72,11 +74,12 @@ export async function batchQueryLLM(
     );
     // console.log('\nDescriptions from KG:', descriptions);
 
-    // Check if descriptions are over threshold, otherwise use Custom Search API snippets
+    // Check if descriptions are over threshold and get the detailed description.
     let description;
     if (descriptions.length > 0) {
       description = descriptions[0].detailedDescription;
     } else {
+      // Otherwise use Custom Search API snippets.
       const searchResults = (await fetchCustomSearch(transaction.name)) || [];
       description =
         searchResults.length > 0
@@ -85,15 +88,16 @@ export async function batchQueryLLM(
     }
 
     // console.log('\nDescription:', description);
-
+    // Return the transaction ID, prompt, and context.
     return {
       transaction_ID: transaction.transaction_ID,
       prompt,
       context: description,
     };
   });
+  // Wait for all contexts to be generated.
   const contexts = await Promise.all(contextPromises);
-
+  // Create a list of results for each context element.
   const results: CategorizedResult[] = [];
   for (const { transaction_ID, prompt, context } of contexts) {
     const response = await queryLLM(prompt, context);
@@ -117,12 +121,13 @@ export async function batchQueryLLM(
     // const name = prompt.split('from ')[1].split(' be?')[0];
     // console.log('name:', name, ' classified as:', possibleCategories, ' with context:', context);
 
+    // Add the transaction ID and possible categories to the results.
     results.push({
       transaction_ID,
       possibleCategories,
       classifiedBy: 'LLM',
     });
   }
-
+  // Return the results.
   return results;
 }
