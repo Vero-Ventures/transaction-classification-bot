@@ -11,6 +11,8 @@ import { classifyTransactions } from '@/actions/classify';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
 import { ClassifiedCategory } from '@/types/Category';
+import { find_industry } from '@/actions/quickbooks';
+import { getSession } from 'next-auth/react';
 
 export default function HomePage() {
   const [purchases, setPurchases] = useState<Transaction[]>([]);
@@ -31,8 +33,37 @@ export default function HomePage() {
         console.error('Error fetching purchases:', error);
       }
     };
+    const updateIndustry = async () => {
+      const industry = await find_industry();
+      const session = await getSession();
+      const email = session?.user?.email;
+
+      if (email) {
+        try {
+          const response = await fetch('/api/update-industry', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ industry, email }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update industry');
+          }
+
+          const result = await response.json();
+          console.log(result.message);
+        } catch (error) {
+          console.error('Error updating industry:', error);
+        }
+      } else {
+        console.error('No user email found in session');
+      }
+    };
 
     fetchPurchases();
+    updateIndustry();
   }, []);
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
