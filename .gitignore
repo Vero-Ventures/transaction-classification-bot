@@ -4,3 +4,4 @@
 .idea
 package-lock.json
 /venv
+/Scripts/Create Classification csv/data/
