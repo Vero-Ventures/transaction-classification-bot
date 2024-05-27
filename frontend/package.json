@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
+    "dev": "prisma generate && next dev --turbo",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint --fix './**/*.{js,jsx,ts,tsx}'",
@@ -20,7 +20,8 @@
     "next-auth": "^4.24.7",
     "node-quickbooks": "^2.0.45",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-icons": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.1.1",

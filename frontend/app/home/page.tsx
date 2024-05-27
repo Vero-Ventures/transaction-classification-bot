@@ -10,12 +10,13 @@ import {
 import { classifyTransactions } from '@/actions/classify';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
+import { ClassifiedCategory } from '@/types/Category';
 
 export default function HomePage() {
   const [purchases, setPurchases] = useState<Transaction[]>([]);
-  const [categorizedResults, setCategorizedResults] = useState<{
-    [transaction_ID: string]: string[];
-  }>({});
+  const [categorizedResults, setCategorizedResults] = useState<
+    Record<string, ClassifiedCategory[]>
+  >({});
   const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -35,17 +36,31 @@ export default function HomePage() {
   }, []);
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
-    const categorizedOnly: Transaction[] = filterCategorized(purchases);
-    const result: { [transaction_ID: string]: string[] } | { error: string } =
+    // Get a reference for the current date and the date 5 years ago.
+    const today = new Date();
+
+    const five_years_ago = new Date(
+      today.getFullYear() - 5,
+      today.getMonth(),
+      today.getDate()
+    );
+    // Convert the dates to strings in the format 'YYYY-MM-DD'.
+    const start_date = today.toISOString().split('T')[0];
+    const end_date = five_years_ago.toISOString().split('T')[0];
+    // Get the past transactions from QuickBooks.
+    const pastTransactions = await get_transactions(start_date, end_date);
+    const pastTransactionsResult = JSON.parse(pastTransactions).slice(1);
+    // Pass the transactions to classify and the past 5 years of transactions.
+    const result: Record<string, ClassifiedCategory[]> | { error: string } =
       await classifyTransactions(
-        categorizedOnly,
+        filterCategorized(pastTransactionsResult),
         filterUncategorized(selectedPurchases)
       );
-    if (result.error) {
+    if ('error' in result) {
       console.error('Error classifying transactions:', result.error);
       return;
     }
-    setCategorizedResults(result as { [transaction_ID: string]: string[] });
+    setCategorizedResults(result);
   };
 
   return categorizedResults && Object.keys(categorizedResults).length > 0 ? (
