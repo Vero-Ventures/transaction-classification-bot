@@ -28,7 +28,7 @@ export const classifyTransactions = async (
         const possibleCategoriesSet = new Set(
           matches.map(match => match.item.category)
         );
-        
+
         // Filter out any categories found in the matches that are not valid.
         const possibleValidCategories = Array.from(possibleCategoriesSet)
           .map(possibleCategory =>
@@ -41,7 +41,7 @@ export const classifyTransactions = async (
             ...category,
             classifiedBy: 'Fuzzy or Exact Match by Fuse',
           }));
-          
+
         // If no valid categories are found, add the transaction to the no matches array.
         if (possibleValidCategories.length === 0) {
           noMatches.push(uncategorized);
