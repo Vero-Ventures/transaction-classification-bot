@@ -11,6 +11,7 @@ export default function ReviewPage({
   selectedPurchases: Transaction[];
   categorizedResults: Record<string, ClassifiedCategory[]>;
 }) {
+  // Define the state for the selected categories.
   const [selectedCategories, setSelectedCategories] = useState<
     Record<string, string>
   >({});
@@ -18,9 +19,12 @@ export default function ReviewPage({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Set the initial categories for the selected purchases.
   useEffect(() => {
     const initializeCategories = async () => {
+      // Initialize the initial categories object.
       const initialCategories: Record<string, string> = {};
+      // Iterate over the selected purchases and set the initial category.
       selectedPurchases.forEach(purchase => {
         const firstCategory =
           categorizedResults[purchase.transaction_ID]?.[0]?.name;
@@ -28,19 +32,22 @@ export default function ReviewPage({
           initialCategories[purchase.transaction_ID] = firstCategory;
         }
       });
+      // Set the selected purchases category.
       setSelectedCategories(initialCategories);
     };
-
     initializeCategories();
   }, [selectedPurchases, categorizedResults]);
 
+  // Define the function to handle category changes for the purchases.
   const handleCategoryChange = (purchaseId: string, category: string) => {
+    // Update the selected purchases category.
     setSelectedCategories({
       ...selectedCategories,
       [purchaseId]: category,
     });
   };
 
+  // Save the selected categories (Currently Logging).
   const handleSave = async () => {
     setIsSaving(true);
     try {
@@ -60,16 +67,18 @@ export default function ReviewPage({
       );
       setError(null);
     } catch (error) {
+      // Catch and log any errors.
       console.error('Error saving categories:', error);
       setError('An error occurred while saving. Please try again.');
     } finally {
+      // Set values when finished.
       setIsSaving(false);
       setIsModalOpen(true);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto w-11/12 py-8">
       <h1 className="text-3xl font-bold mb-4">Results</h1>
       <div className="overflow-x-auto">
         <button
@@ -124,7 +133,7 @@ export default function ReviewPage({
                       <span className="text-red-500">No Matches Found</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 font-medium text-gray-800">
+                  <td className="px-4 py-2 min-w-24 font-medium text-gray-800">
                     -${Math.abs(purchase.amount).toFixed(2)}
                   </td>
                 </tr>

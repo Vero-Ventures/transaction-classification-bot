@@ -1,5 +1,5 @@
 export type Account = {
-  // id: Integer as a string.
+  // id: Whole number as a string.
   id: string;
   name: string;
   active: boolean;
