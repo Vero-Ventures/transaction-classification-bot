@@ -5,8 +5,8 @@ import { signIn } from 'next-auth/react';
 const SignInButton = () => {
   return (
     <button
-      onClick={() => signIn('quickbooks', { callbackUrl: '/home' })}
-      className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition duration-300">
+      className="text-white bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg shadow-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+      onClick={() => signIn('quickbooks', { callbackUrl: '/home' })}>
       Sign in with QuickBooks
     </button>
   );
