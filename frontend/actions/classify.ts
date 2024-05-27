@@ -2,8 +2,9 @@
 import { Transaction } from '@/types/Transaction';
 import { Account } from '@/types/Account';
 import { Category, ClassifiedCategory } from '@/types/Category';
+import { CategorizedResult } from '@/types/CategorizedResult';
 import { get_accounts } from '@/actions/quickbooks';
-// import { batchQueryLLM } from '@/actions/llm';
+import { batchQueryLLM } from '@/actions/llm';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
@@ -52,23 +53,23 @@ export const classifyTransactions = async (
       }
     });
 
-    // if (noMatches.length > 0) {
-    //   let llmApiResponse;
-    //   try {
-    //     llmApiResponse = await sendToLLMApi(noMatches, validAccounts);
-    //     if (llmApiResponse) {
-    //       llmApiResponse.forEach((llmResult: CategorizedResult) => {
-    //         results.push({
-    //           transaction_ID: llmResult.transaction_ID,
-    //           possibleCategories: llmResult.possibleCategories,
-    //           classifiedBy: 'LLM',
-    //         });
-    //       });
-    //     }
-    //   } catch (error) {
-    //     console.log('Error from LLM API usage: ', error);
-    //   }
-    // }
+    if (noMatches.length > 0) {
+      let llmApiResponse;
+      try {
+        llmApiResponse = await sendToLLMApi(noMatches, validCategories);
+        if (llmApiResponse) {
+          llmApiResponse.forEach((llmResult: CategorizedResult) => {
+            results[llmResult.transaction_ID] =
+              llmResult.possibleCategories.map(category => ({
+                ...category,
+                classifiedBy: 'LLM API',
+              }));
+          });
+        }
+      } catch (error) {
+        console.log('Error from LLM API usage: ', error);
+      }
+    }
 
     return results;
   } catch (error) {
@@ -92,12 +93,9 @@ const fetchValidCategories = async (): Promise<Category[]> => {
   });
 };
 
-// const sendToLLMApi = async (
-//   uncategorizedTransactions: Transaction[],
-//   validCategories: ValidAccount[]
-// ): Promise<CategorizedResult[]> => {
-//   return await batchQueryLLM(
-//     uncategorizedTransactions,
-//     validCategories
-//   );
-// };
+const sendToLLMApi = async (
+  uncategorizedTransactions: Transaction[],
+  validCategories: Category[]
+): Promise<CategorizedResult[]> => {
+  return await batchQueryLLM(uncategorizedTransactions, validCategories);
+};
