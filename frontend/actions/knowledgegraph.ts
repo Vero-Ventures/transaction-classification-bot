@@ -6,6 +6,7 @@ export async function fetchKnowledgeGraph(query: string) {
   const apiKey = process.env.GOOGLE_API_KEY;
 
   try {
+    // Fetch knowledge graph results.
     const response = await kgsearch.entities.search({
       auth: apiKey,
       query: query,
@@ -14,6 +15,7 @@ export async function fetchKnowledgeGraph(query: string) {
       indent: true,
     });
 
+    // If a response is returned, reformat and return the data.
     if (response.data.itemListElement) {
       const results = response.data.itemListElement.map((item: any) => {
         const entity = item.result;
@@ -25,12 +27,13 @@ export async function fetchKnowledgeGraph(query: string) {
             : '',
         };
       });
-
       return results;
     } else {
+      // If no response is returned, return an empty array.
       return;
     }
   } catch (error) {
+    // Log any errors that occur.
     console.error('Error fetching knowledge graph:', error);
   }
 }
