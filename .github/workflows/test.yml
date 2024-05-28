@@ -31,7 +31,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run tests with coverage
-      working-directory: ./playwright-tests
+      working-directory: ./frontend
       run: npm run coverage
 
     - name: Upload coverage reports to Codecov
