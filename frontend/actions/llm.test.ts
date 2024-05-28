@@ -1,6 +1,7 @@
 import { queryLLM, batchQueryLLM } from './llm';
-import { Transaction } from '@/types/Transaction';
 import { fetchCustomSearch } from './customsearch';
+import { fetchKnowledgeGraph } from './knowledgegraph';
+import { Transaction } from '@/types/Transaction';
 
 describe('queryLLM', () => {
   beforeEach(() => {
@@ -44,4 +45,25 @@ describe('queryLLM', () => {
       'Query or name is required'
     );
   });
+});
+
+beforeEach(() => {
+  // Clear any mocks or setup before each test
+  jest.clearAllMocks();
+});
+
+it('should return categorized results for transactions', async () => {
+  // Mocking fetchKnowledgeGraph and fetchCustomSearch responses
+  const fetchKnowledgeGraphMock = jest
+    .fn()
+    .mockResolvedValueOnce([
+      { detailedDescription: 'Description 1', resultScore: 110 },
+    ])
+    .mockResolvedValueOnce([
+      { detailedDescription: 'Description 2', resultScore: 90 },
+    ]);
+  const transactions: Transaction[] = []; // Declare the 'transactions' variable
+
+  const result = await batchQueryLLM(transactions, []);
+  expect(result).toEqual([]);
 });

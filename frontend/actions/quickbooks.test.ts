@@ -5,6 +5,7 @@ import {
   find_purchase,
   find_industry,
 } from './quickbooks';
+import { QueryResult } from '@/types/QueryResult';
 
 // Mock the create_qb_object function since we want to isolate the tests for get_accounts
 jest.mock('@/actions/qb_client', () => ({
@@ -14,7 +15,6 @@ jest.mock('@/actions/qb_client', () => ({
 describe('get_accounts function', () => {
   // Test to ensure it returns a list of formatted accounts when the QuickBooks API call is successful.
   test('should return a list of formatted accounts when the QuickBooks API call is successful', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       findAccounts: jest.fn().mockImplementation((_, callback) => {
         callback(null, {
@@ -28,7 +28,6 @@ describe('get_accounts function', () => {
       mockQBObject
     );
 
-    // Call the get_accounts function
     const result = await get_accounts();
 
     // Expect the result to be a JSON string containing the formatted accounts
@@ -39,7 +38,6 @@ describe('get_accounts function', () => {
 
   // Test to ensure it returns an error message when there's an error in fetching accounts from the QuickBooks API.
   test('should return an error message when there is an error in fetching accounts from the QuickBooks API', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       findAccounts: jest.fn().mockImplementation((_, callback) => {
         callback(
@@ -56,16 +54,13 @@ describe('get_accounts function', () => {
       mockQBObject
     );
 
-    // Call the get_accounts function
     const result = await get_accounts();
 
-    // Expect the result to be a JSON string containing the error message
     expect(JSON.parse(result)).toEqual({});
   });
 
   // Test to ensure it handles inactive accounts properly.
   test('should handle inactive accounts properly', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       findAccounts: jest.fn().mockImplementation((_, callback) => {
         callback(null, {
@@ -79,10 +74,8 @@ describe('get_accounts function', () => {
       mockQBObject
     );
 
-    // Call the get_accounts function
     const result = await get_accounts();
 
-    // Expect the result to be a JSON string containing the formatted accounts with only active accounts
     expect(result).toEqual(
       '[{"result":"Success","message":"Accounts found successfully.","detail":"The account objects were found successfully."}]'
     );
@@ -90,16 +83,13 @@ describe('get_accounts function', () => {
 });
 
 describe('get_transactions function', () => {
-  // Mock create_qb_object function
   const mockCreateQBObject = jest.fn();
 
-  // Mock create_qb_object implementation
   jest.mock('@/actions/qb_client', () => ({
     create_qb_object: mockCreateQBObject,
   }));
   // Test to ensure it returns a list of formatted transactions when the QuickBooks API call is successful.
   test('should return a list of formatted transactions when the QuickBooks API call is successful', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       reportTransactionList: jest
         .fn()
@@ -139,7 +129,6 @@ describe('get_transactions function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the get_transactions function
     const result = await get_transactions();
 
     // Expect the result to be a JSON string containing the formatted transactions
@@ -167,10 +156,8 @@ describe('get_transactions function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the get_transactions function
     const result = await get_transactions();
 
-    // Expect the result to be a JSON string containing the error message
     expect(JSON.parse(result)).toEqual({});
 
     // expect(JSON.parse(result)).toEqual({ result: 'Error', message: 'Error message', detail: 'Error detail' });
@@ -178,7 +165,6 @@ describe('get_transactions function', () => {
 
   // Test to ensure it handles different date scenarios properly.
   test('should handle different date scenarios properly', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       reportTransactionList: jest
         .fn()
@@ -204,20 +190,16 @@ describe('get_transactions function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the get_transactions function with specific date range
     const result = await get_transactions('2024-05-01', '2024-05-01');
 
-    // Expect the result to be a JSON string containing the formatted transactions for the specified date range
     expect(result).toEqual('{}');
     // expect(result).toEqual('[{"result":"Success","message":"Transactions found successfully.","detail":"The transaction objects were found successfully."},{"date":"2024-05-01","transaction_type":"Expense","transaction_ID":"1","name":"Transaction 1","account":"Account 1","category":"Category 1","amount":"100.00"}]');
   });
 });
 
 describe('find_purchase function', () => {
-  // Mock create_qb_object function
   const mockCreateQBObject = jest.fn();
 
-  // Mock create_qb_object implementation
   jest.mock('@/actions/qb_client', () => ({
     create_qb_object: mockCreateQBObject,
   }));
@@ -247,17 +229,14 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function
     const result = await find_purchase('123', true);
 
-    // Expect the result to be a JSON string containing the formatted purchase object
     expect(result).toEqual('{}');
     // expect(result).toEqual('{"result_info":{"result":"Success","message":"Purchase found successfully.","detail":"The purchase object was found successfully."},"id":"123","purchase_type":"Cash","date":"2024-05-01","total":100,"primary_account":"Account 1","purchase_name":"Vendor 1","purchase_category":"Category 1"}');
   });
 
   // Test to ensure it returns the raw response when format_result is false.
   test('should return the raw response when format_result is false', async () => {
-    // Mock QuickBooks API object with successful response
     const mockQBObject = {
       getPurchase: jest.fn().mockImplementation((id, callback) => {
         callback(null, {
@@ -280,10 +259,8 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function with format_result as false
     const result = await find_purchase('123', false);
 
-    // Expect the result to be the raw response
     expect(result).toEqual('{}');
 
     // expect(result).toEqual('{"Id":"123","PaymentType":"Cash","TxnDate":"2024-05-01","TotalAmt":100,"AccountRef":{"name":"Account 1"},"EntityRef":{"name":"Vendor 1"},"Line":[{"DetailType":"AccountBasedExpenseLineDetail","AccountBasedExpenseLineDetail":{"AccountRef":{"name":"Category 1"}}}]}');
@@ -291,7 +268,6 @@ describe('find_purchase function', () => {
 
   // Test to ensure it returns an error message when there's an error in fetching purchase from the QuickBooks API.
   test('should return an error message when there is an error in fetching purchase from the QuickBooks API', async () => {
-    // Mock QuickBooks API object with error response
     const mockQBObject = {
       getPurchase: jest.fn().mockImplementation((id, callback) => {
         callback(
@@ -306,18 +282,14 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function
     const result = await find_purchase('123', true);
 
-    // Expect the result to be a JSON string containing the error message
     expect(JSON.parse(result)).toEqual({});
     // expect(JSON.parse(result)).toEqual({ result: 'Error', message: 'Error message', detail: 'Error detail' });
   });
   test('should return a formatted purchase object when the QuickBooks API call is successful', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       getPurchase: jest.fn().mockImplementation((id, callback) => {
-        // Mock successful response from the QuickBooks API
         callback(null, {
           Id: '123',
           PaymentType: 'Cash',
@@ -338,20 +310,16 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function
     const result = await find_purchase('123', true);
 
-    // Expect the result to be a JSON string containing the formatted purchase object
     expect(result).toEqual('{}');
     // expect(result).toEqual('{"result_info":{"result":"Success","message":"Purchase found successfully.","detail":"The purchase object was found successfully."},"id":"123","purchase_type":"Cash","date":"2024-05-01","total":100,"primary_account":"Account 1","purchase_name":"Vendor 1","purchase_category":"Category 1"}');
   });
 
   // Test to ensure it returns the raw response when format_result is false.
   test('should return the raw response when format_result is false', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       getPurchase: jest.fn().mockImplementation((id, callback) => {
-        // Mock successful response from the QuickBooks API
         callback(null, {
           Id: '123',
           PaymentType: 'Cash',
@@ -372,20 +340,16 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function with format_result set to false
     const result = await find_purchase('123', false);
 
-    // Expect the result to be the raw response
     expect(result).toEqual('{}');
     // expect(result).toEqual('{"Id":"123","PaymentType":"Cash","TxnDate":"2024-05-01","TotalAmt":100,"AccountRef":{"name":"Account 1"},"EntityRef":{"name":"Vendor 1"},"Line":[{"DetailType":"AccountBasedExpenseLineDetail","AccountBasedExpenseLineDetail":{"AccountRef":{"name":"Category 1"}}}]}');
   });
 
   // Test to ensure it returns an error message when there's an error in fetching purchase from the QuickBooks API.
   test('should return an error message when there is an error in fetching purchase from the QuickBooks API', async () => {
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       getPurchase: jest.fn().mockImplementation((id, callback) => {
-        // Mock error response from the QuickBooks API
         callback(
           {
             Fault: {
@@ -398,10 +362,8 @@ describe('find_purchase function', () => {
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_purchase function
     const result = await find_purchase('123', true);
 
-    // Expect the result to be a JSON string containing the error message
     expect(JSON.parse(result)).toEqual({});
 
     // expect(JSON.parse(result)).toEqual({ result: 'Error', message: 'Error message', detail: 'Error detail' });
@@ -409,16 +371,13 @@ describe('find_purchase function', () => {
 });
 
 describe('find_industry function', () => {
-  // Mock create_qb_object function
   const mockCreateQBObject = jest.fn();
 
-  // Mock create_qb_object implementation
   jest.mock('@/actions/qb_client', () => ({
     create_qb_object: mockCreateQBObject,
   }));
   // Test to ensure it returns the industry type when the QuickBooks API call is successful.
   test('should return a formatted industry type when the QuickBooks API call is successful', async () => {
-    // Mock response from the QuickBooks API
     const mockResponse = {
       QueryResponse: {
         CompanyInfo: [
@@ -429,26 +388,21 @@ describe('find_industry function', () => {
       },
     };
 
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       findCompanyInfos: jest.fn().mockImplementation(callback => {
-        // Mock successful response from the QuickBooks API
         callback(null, mockResponse);
       }),
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_industry function
     const result = await find_industry();
 
-    // Expect the result to be the industry type 'Software'
     expect(result).toEqual('Error');
     //expect(result).toEqual('Software');
   });
 
   // Test to ensure it returns 'None' when no industry type is found.
   test('should return "None" when no industry type is found', async () => {
-    // Mock response from the QuickBooks API
     const mockResponse = {
       QueryResponse: {
         CompanyInfo: [
@@ -459,31 +413,56 @@ describe('find_industry function', () => {
       },
     };
 
-    // Mock the create_qb_object function to return a mock QuickBooks API object
     const mockQBObject = {
       findCompanyInfos: jest.fn().mockImplementation(callback => {
-        // Mock successful response from the QuickBooks API
         callback(null, mockResponse);
       }),
     };
     mockCreateQBObject.mockResolvedValue(mockQBObject);
 
-    // Call the find_industry function
     const result = await find_industry();
 
-    // Expect the result to be 'None' when no industry type is found
     expect(result).toEqual('Error');
   });
 
   // Test to ensure it returns 'Error' when there is an error in fetching company info from the QuickBooks API.
   test('should return an error message when there is an error in fetching company info from the QuickBooks API', async () => {
-    // Mock the create_qb_object function to throw an error
     mockCreateQBObject.mockResolvedValue('Error');
 
-    // Call the find_industry function
     const result = await find_industry();
 
-    // Expect the result to be 'Error' when there is an error in fetching company info
     expect(result).toEqual('Error');
   });
+  test('should create a query result object with error details', () => {
+    const success = false;
+    const results = {
+      Error: [{ Message: 'Error message', Detail: 'Error detail' }],
+    };
+
+    const queryResult = create_query_result(success, results);
+
+    expect(queryResult.result).toEqual('Error');
+    expect(queryResult.message).toEqual('Error message');
+    expect(queryResult.detail).toEqual('Error detail');
+  });
+
+  function create_query_result(success: boolean, results: any) {
+    const QueryResult: QueryResult = {
+      result: '',
+      message: '',
+      detail: '',
+    };
+
+    if (success) {
+      QueryResult.result = 'Success';
+      QueryResult.message = 'Accounts found successfully.';
+      QueryResult.detail = 'The account objects were found successfully.';
+    } else {
+      QueryResult.result = 'Error';
+      QueryResult.message = results.Error[0].Message;
+      QueryResult.detail = results.Error[0].Detail;
+    }
+
+    return QueryResult;
+  }
 });
