@@ -23,10 +23,12 @@ export async function refreshToken(token: TokenSet): Promise<TokenSet> {
       headers,
       body: data,
     });
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
-    }
+
     const responseData = await response.json();
+
+    if (!response.ok) {
+      throw responseData;
+    }
 
     const newToken = {
       ...token,

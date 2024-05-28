@@ -214,7 +214,7 @@ export default function SelectionPage({
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">My Expenses</h1>
       <div className="overflow-x-auto">
-        <div className="flex justify-between w-full px-4">
+        <div className="flex justify-between w-full">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-4 mb-2 rounded-lg"
             onClick={() => handleSubmit(selectedPurchases)}>

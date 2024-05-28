@@ -10,7 +10,6 @@ import {
 import { classifyTransactions } from '@/actions/classify';
 import { Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
-import { CategorizedResult } from '@/types/CategorizedResult';
 import { ClassifiedCategory } from '@/types/Category';
 
 export default function HomePage() {
@@ -37,16 +36,30 @@ export default function HomePage() {
   }, []);
 
   const handleSubmit = async (selectedPurchases: Transaction[]) => {
+    // Get a reference for the current date and the date 5 years ago.
+    const today = new Date();
+
+    const five_years_ago = new Date(
+      today.getFullYear() - 5,
+      today.getMonth(),
+      today.getDate()
+    );
+    // Convert the dates to strings in the format 'YYYY-MM-DD'.
+    const start_date = today.toISOString().split('T')[0];
+    const end_date = five_years_ago.toISOString().split('T')[0];
+    // Get the past transactions from QuickBooks.
+    const pastTransactions = await get_transactions(start_date, end_date);
+    const pastTransactionsResult = JSON.parse(pastTransactions).slice(1);
+    // Pass the transactions to classify and the past 5 years of transactions.
     const result: Record<string, ClassifiedCategory[]> | { error: string } =
       await classifyTransactions(
-        filterCategorized(purchases),
+        filterCategorized(pastTransactionsResult),
         filterUncategorized(selectedPurchases)
       );
     if ('error' in result) {
       console.error('Error classifying transactions:', result.error);
       return;
     }
-    console.log(result);
     setCategorizedResults(result);
   };
 
