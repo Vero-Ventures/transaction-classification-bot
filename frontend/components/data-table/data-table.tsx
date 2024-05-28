@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/table';
 import { Transaction } from '@/types/Transaction';
 import { columns } from './columns';
+import { DatePicker } from '@/components/date-picker';
 
 export function DataTable({
   transactions,
@@ -49,6 +50,24 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+
+  // Set default dates
+  const currentDate = new Date();
+  const twoYearsAgo = new Date();
+  twoYearsAgo.setFullYear(currentDate.getFullYear() - 2);
+
+  const [startDate, setStartDate] = React.useState<Date | null>(twoYearsAgo);
+  const [endDate, setEndDate] = React.useState<Date | null>(currentDate);
+
+  const changeStartDate = (date: Date | null) => {
+    table.getColumn('date')?.setFilterValue(`${date} to ${endDate}`);
+    setStartDate(date);
+  };
+
+  const changeEndDate = (date: Date | null) => {
+    table.getColumn('date')?.setFilterValue(`${startDate} to ${date}`);
+    setEndDate(date);
+  };
 
   const table = useReactTable({
     data: transactions,
@@ -80,29 +99,37 @@ export function DataTable({
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(column => column.getCanHide())
-              .map(column => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={value => column.toggleVisibility(!!value)}>
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="ml-auto flex items-center space-x-2">
+          <DatePicker date={startDate} setDate={changeStartDate} />
+          <DatePicker date={endDate} setDate={changeEndDate} />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-blue-500 hover:bg-blue-800 hover:text-white text-white">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter(column => column.getCanHide())
+                .map(column => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize focus:bg-blue-300"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={value =>
+                        column.toggleVisibility(!!value)
+                      }>
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>

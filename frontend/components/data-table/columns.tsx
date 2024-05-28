@@ -53,6 +53,20 @@ export const columns: ColumnDef<Transaction>[] = [
       );
       return <div>{formattedDate}</div>;
     },
+    filterFn: (row, id, filterValue) => {
+      // Convert filterValue to an array of start and end dates
+      const [startDate, endDate] = filterValue
+        .split(' to ')
+        .map((date: string) => {
+          return date ? new Date(date) : null;
+        });
+
+      // Filter rows based on the date range
+      const rowDate = new Date(row.getValue('date'));
+      return (
+        (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate)
+      );
+    },
   },
   {
     accessorKey: 'transaction_type',
