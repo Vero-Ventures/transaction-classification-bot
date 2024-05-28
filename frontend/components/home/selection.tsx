@@ -4,7 +4,7 @@ import { get_transactions } from '@/actions/quickbooks';
 import { SelectionTable } from '@/components/data-table/selection-table';
 import { Transaction } from '@/types/Transaction';
 import { filterUncategorized } from '@/utils/filter-transactions';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function SelectionPage({
   handleClassify,
