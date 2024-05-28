@@ -1,3 +1,5 @@
+import { Category } from './Category';
+
 export type Transaction = {
   // date: YYYY-MM-DD.
   date: string;
@@ -10,4 +12,8 @@ export type Transaction = {
   category: string;
   // amount: Decimal as a string.
   amount: number;
+};
+
+export type CategorizedTransaction = Omit<Transaction, 'category'> & {
+  categories: Category[];
 };

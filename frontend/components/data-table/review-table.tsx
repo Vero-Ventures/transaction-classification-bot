@@ -12,15 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -30,18 +23,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Transaction } from '@/types/Transaction';
-import { columns } from './columns';
-import { DatePicker } from '@/components/date-picker';
+import { CategorizedTransaction, Transaction } from '@/types/Transaction';
+import { reviewColumns } from './columns';
 
-export function DataTable({
-  transactions,
-  isClassifying,
-  handleClassify,
+export function ReviewTable({
+  categorizedTransactions,
+  selectedCategories,
+  handleCategoryChange,
+  handleSave,
+  isSaving,
 }: {
-  transactions: Transaction[];
-  isClassifying: boolean;
-  handleClassify: (selectedRows: Transaction[]) => void;
+  categorizedTransactions: CategorizedTransaction[];
+  selectedCategories: Record<string, string>;
+  handleCategoryChange: (transaction_ID: string, category: string) => void;
+  handleSave: (selectedRows: CategorizedTransaction[]) => void;
+  isSaving: boolean;
 }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -51,27 +47,9 @@ export function DataTable({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  // Set default dates
-  const currentDate = new Date();
-  const twoYearsAgo = new Date();
-  twoYearsAgo.setFullYear(currentDate.getFullYear() - 2);
-
-  const [startDate, setStartDate] = React.useState<Date | null>(twoYearsAgo);
-  const [endDate, setEndDate] = React.useState<Date | null>(currentDate);
-
-  const changeStartDate = (date: Date | null) => {
-    table.getColumn('date')?.setFilterValue(`${date} to ${endDate}`);
-    setStartDate(date);
-  };
-
-  const changeEndDate = (date: Date | null) => {
-    table.getColumn('date')?.setFilterValue(`${startDate} to ${date}`);
-    setEndDate(date);
-  };
-
   const table = useReactTable({
-    data: transactions,
-    columns,
+    data: categorizedTransactions,
+    columns: reviewColumns(selectedCategories, handleCategoryChange),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -99,41 +77,6 @@ export function DataTable({
           }
           className="max-w-sm"
         />
-        <div className="ml-auto flex items-center space-x-2">
-          <DatePicker date={startDate} setDate={changeStartDate} />
-          <DatePicker date={endDate} setDate={changeEndDate} />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="bg-blue-500 hover:bg-blue-800 hover:text-white text-white">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter(column => column.getCanHide())
-                .map(column => {
-                  let field = column.id;
-                  if (column.id === 'transaction_type') {
-                    field = 'Type';
-                  }
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize focus:bg-blue-300"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={value =>
-                        column.toggleVisibility(!!value)
-                      }>
-                      {field}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -176,7 +119,7 @@ export function DataTable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={reviewColumns.length}
                   className="h-24 text-center">
                   No results.
                 </TableCell>
@@ -207,18 +150,17 @@ export function DataTable({
           </Button>
           <Button
             onClick={() =>
-              handleClassify(
+              handleSave(
                 table
                   .getFilteredSelectedRowModel()
                   .rows.map(row => row.original)
               )
             }
             disabled={
-              isClassifying ||
-              table.getFilteredSelectedRowModel().rows.length === 0
+              isSaving || table.getFilteredSelectedRowModel().rows.length === 0
             }
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-            {isClassifying ? 'Classifying...' : 'Classify'}
+            {isSaving ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </div>

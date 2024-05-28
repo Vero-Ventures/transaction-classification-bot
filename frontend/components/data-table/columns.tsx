@@ -1,12 +1,16 @@
-import { Column, ColumnDef } from '@tanstack/react-table';
+import { Column, ColumnDef, Row, Table } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Transaction } from '@/types/Transaction';
+import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import { ArrowUpDown } from 'lucide-react';
+import { Category } from '@/types/Category';
 
+// Define button for a sortable header
 const sortableHeader = (
-  column: Column<Transaction, unknown>,
+  column:
+    | Column<Transaction, unknown>
+    | Column<CategorizedTransaction, unknown>,
   title: string
 ) => {
   return (
@@ -20,10 +24,15 @@ const sortableHeader = (
   );
 };
 
-export const columns: ColumnDef<Transaction>[] = [
+const commonColumns = [
+  // Select column
   {
     id: 'select',
-    header: ({ table }) => (
+    header: ({
+      table,
+    }: {
+      table: Table<Transaction> | Table<CategorizedTransaction>;
+    }) => (
       <Checkbox
         checked={
           table.getIsAllPageRowsSelected() ||
@@ -33,7 +42,11 @@ export const columns: ColumnDef<Transaction>[] = [
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
+    cell: ({
+      row,
+    }: {
+      row: Row<Transaction> | Row<CategorizedTransaction>;
+    }) => (
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={value => row.toggleSelected(!!value)}
@@ -43,55 +56,101 @@ export const columns: ColumnDef<Transaction>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+  // Date column
   {
     accessorKey: 'date',
-    header: ({ column }) => sortableHeader(column, 'Date'),
-    cell: ({ row }) => {
+    header: ({
+      column,
+    }: {
+      column:
+        | Column<Transaction, unknown>
+        | Column<CategorizedTransaction, unknown>;
+    }) => sortableHeader(column, 'Date'),
+    cell: ({
+      row,
+    }: {
+      row: Row<Transaction> | Row<CategorizedTransaction>;
+    }) => {
       const formattedDate = format(
         new Date(row.getValue('date')),
         'MM/dd/yyyy'
       );
       return <div>{formattedDate}</div>;
     },
-    filterFn: (row, id, filterValue) => {
-      // Convert filterValue to an array of start and end dates
+    // Filter function for date column
+    filterFn: (
+      row: Row<Transaction> | Row<CategorizedTransaction>,
+      _: string,
+      filterValue: string
+    ) => {
+      // Get start and end date from filter value
       const [startDate, endDate] = filterValue
         .split(' to ')
         .map((date: string) => {
           return date ? new Date(date) : null;
         });
 
-      // Filter rows based on the date range
+      // Return true if the row date is within the range
       const rowDate = new Date(row.getValue('date'));
       return (
         (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate)
       );
     },
   },
+  // Type column
   {
     accessorKey: 'transaction_type',
-    header: ({ column }) => sortableHeader(column, 'Type'),
-    cell: ({ row }) => row.getValue('transaction_type'),
+    header: ({
+      column,
+    }: {
+      column:
+        | Column<Transaction, unknown>
+        | Column<CategorizedTransaction, unknown>;
+    }) => sortableHeader(column, 'Type'),
+    cell: ({ row }: { row: Row<Transaction> | Row<CategorizedTransaction> }) =>
+      row.getValue('transaction_type'),
   },
+  // Payee column
   {
     accessorKey: 'name',
-    header: ({ column }) => sortableHeader(column, 'Payee'),
-    cell: ({ row }) => row.getValue('name'),
+    header: ({
+      column,
+    }: {
+      column:
+        | Column<Transaction, unknown>
+        | Column<CategorizedTransaction, unknown>;
+    }) => sortableHeader(column, 'Payee'),
+    cell: ({ row }: { row: Row<Transaction> | Row<CategorizedTransaction> }) =>
+      row.getValue('name'),
   },
+  // Account column
   {
     accessorKey: 'account',
-    header: ({ column }) => sortableHeader(column, 'Account'),
-    cell: ({ row }) => row.getValue('account'),
+    header: ({
+      column,
+    }: {
+      column:
+        | Column<Transaction, unknown>
+        | Column<CategorizedTransaction, unknown>;
+    }) => sortableHeader(column, 'Account'),
+    cell: ({ row }: { row: Row<Transaction> | Row<CategorizedTransaction> }) =>
+      row.getValue('account'),
   },
-  {
-    accessorKey: 'category',
-    header: 'Category',
-    cell: ({ row }) => row.getValue('category'),
-  },
+  // Amount column
   {
     accessorKey: 'amount',
-    header: ({ column }) => sortableHeader(column, 'Amount'),
-    cell: ({ row }) => {
+    header: ({
+      column,
+    }: {
+      column:
+        | Column<Transaction, unknown>
+        | Column<CategorizedTransaction, unknown>;
+    }) => sortableHeader(column, 'Amount'),
+    cell: ({
+      row,
+    }: {
+      row: Row<Transaction> | Row<CategorizedTransaction>;
+    }) => {
       const amount = parseFloat(row.getValue('amount'));
       const formatted = new Intl.NumberFormat('en-CA', {
         style: 'currency',
@@ -100,4 +159,55 @@ export const columns: ColumnDef<Transaction>[] = [
       return <div>{formatted}</div>;
     },
   },
+];
+
+export const selectionColumns: ColumnDef<Transaction>[] = [
+  commonColumns[0],
+  commonColumns[1],
+  commonColumns[2],
+  commonColumns[3],
+  commonColumns[4],
+  // Category column
+  {
+    accessorKey: 'category',
+    header: 'Category',
+    cell: ({ row }) => row.getValue('category'),
+  },
+  commonColumns[5],
+];
+
+export const reviewColumns = (
+  selectedCategories: Record<string, string>,
+  handleCategoryChange: (transaction_ID: string, category: string) => void
+): ColumnDef<CategorizedTransaction>[] => [
+  commonColumns[0],
+  commonColumns[1],
+  commonColumns[2],
+  commonColumns[3],
+  commonColumns[4],
+  {
+    accessorKey: 'categories',
+    header: 'Categories',
+    cell: ({ row }) => {
+      const categories: Category[] = row.getValue('categories');
+      return categories.length > 0 ? (
+        <select
+          className="border border-gray-700 rounded-lg px-2 py-1"
+          onClick={e => e.stopPropagation()}
+          onChange={e => {
+            handleCategoryChange(row.original.transaction_ID, e.target.value);
+          }}
+          value={selectedCategories[row.original.transaction_ID]}>
+          {categories.map((category, index) => (
+            <option key={index} value={category.name}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="text-red-500">No Categories Found</span>
+      );
+    },
+  },
+  commonColumns[5],
 ];
