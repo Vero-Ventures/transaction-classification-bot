@@ -25,7 +25,7 @@ export const classifyTransactions = async (
     const results: Record<string, ClassifiedCategory[]> = {};
     const noMatches: Transaction[] = [];
 
-    uncategorizedTransactions.forEach(async uncategorized => {
+    for (const uncategorized of uncategorizedTransactions) {
       try {
         const matches = fuse.search(uncategorized.name);
         const possibleCategoriesSet = new Set(
@@ -71,14 +71,15 @@ export const classifyTransactions = async (
           'moving on...'
         );
       }
-    });
+    }
 
     if (noMatches.length > 0) {
       let llmApiResponse;
       try {
         llmApiResponse = await sendToLLMApi(noMatches, validCategories);
         if (llmApiResponse) {
-          llmApiResponse.forEach((llmResult: CategorizedResult) => {
+          for (const llmResult of llmApiResponse) {
+            console.log('LLM Result:', llmResult);
             results[llmResult.transaction_ID] =
               llmResult.possibleCategories.map(category => ({
                 ...category,
@@ -97,14 +98,16 @@ export const classifyTransactions = async (
                   category: category.name,
                 }));
 
-              addTransactions(categorizedTransactionsToAdd);
+              await addTransactions(categorizedTransactionsToAdd);
             }
-          });
+          }
         }
       } catch (error) {
         console.log('Error from LLM API usage: ', error);
       }
     }
+
+    console.log('Results:', results);
 
     return results;
   } catch (error) {

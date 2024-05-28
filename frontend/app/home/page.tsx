@@ -60,6 +60,7 @@ export default function HomePage() {
       console.error('Error classifying transactions:', result.error);
       return;
     }
+    console.log('Categorized results:', result);
     setCategorizedResults(result);
   };
 
