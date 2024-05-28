@@ -24,11 +24,6 @@ export default function ShadcnPage() {
   ) => {
     const categorizedTransactions: CategorizedTransaction[] = [];
     for (const transaction of selectedRows) {
-      const test = result[transaction.transaction_ID];
-      test.push({
-        id: '1',
-        name: 'test',
-      } as ClassifiedCategory);
       categorizedTransactions.push({
         date: transaction.date,
         transaction_type: transaction.transaction_type,

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { ClassifiedCategory } from '@/types/Category';
 import { ReviewTable } from '@/components/data-table/review-table';
+import { find_purchase, update_purchase } from '@/actions/quickbooks';
 
 export default function ReviewPage({
   categorizedTransactions,
@@ -47,6 +48,28 @@ export default function ReviewPage({
     try {
       console.log('selectedRows:', selectedRows);
       console.log('selectedCategories:', selectedCategories);
+      console.log('categorizationResults:', categorizationResults);
+      await Promise.all(
+        selectedRows.map(async transaction => {
+          const transactionID = transaction.transaction_ID;
+          // get the purchase object from QuickBooks
+          const purchaseObj = await find_purchase(transactionID, false);
+
+          // get id of the selected category
+          const category = selectedCategories[transactionID];
+          const accountID = transaction.categories.find(
+            category => category.name === selectedCategories[transactionID]
+          )?.id;
+
+          // update the purchase object with the selected category
+          if (accountID) {
+            const result = await update_purchase(accountID, purchaseObj);
+            if (result === '{}') {
+              throw new Error('Error saving purchase');
+            }
+          }
+        })
+      );
       setError(null);
     } catch (error) {
       console.error('Error saving categories:', error);
