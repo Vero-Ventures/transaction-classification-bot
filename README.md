@@ -236,7 +236,7 @@
 
   After reviewing the categories of each transaction, the user can then select which ones they want to save.
 
-  Finally, the user can the press the save button to save the categorized transactions. These changes will then be reflected back in their Quickbooks account.
+  Finally, the user can then press the save button to save the categorized transactions. These changes will then be reflected back in their Quickbooks account.
 
   Once the user has finished updating their transactions, a pop-up will appear. This pop-up informs the user that the transactions have been updated and saved and will redirect them back to the selection home page.
 
