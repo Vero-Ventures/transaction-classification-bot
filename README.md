@@ -31,7 +31,7 @@
 ## Project Structure
 
 - **Actions:**
-  Contains all server actions that are called by the client components. Files group server actions by their purpose and what technologies they interact with.
+  Contains all server actions (backend functions). Files group server actions by their purpose and what technologies they interact with.
 
 - **Components:**
   Small competent tailwind elements that are loaded within other tailwind pages. Contains files for UI elements consistent across all pages and the different parts of the home page.
@@ -114,6 +114,8 @@
 
     - `home/page.txs`: The tailwind file for the home page that acts as the base for the selection and review components. It has a function to call and get the transactions and a function to switch between components when needed. The UI uses components and simply determines which component to display. It then passes the nessasary data and displays what the component returns.
 
+    - `privacy-policy/page.tsx`: The privacy policy page that is linked in the footer of the site. It is a simple page that displays the privacy policy for the site.
+
     - `api/auth/options.ts`: Define key information for the authorization method such as token provider info, user info, max session length and setting the callbacks to use.
 
     - `api/auth/route.ts`: Simple route to call to check if the user is logged in and update the cookies.
@@ -151,6 +153,16 @@
     - `quickbooks.ts`: Contains multiple functions to call the different elements of the QuickBooks API, format the data received, and return it to the caller. Either returns a dictionary for a single response or an array of objects. Also defines an function to create an object to return with all queries indicate if a call was successful or not.
 
   - **Components:**
+
+    - `date-picker.tsx`: Defines the date picker component that allows user to filter transactions using a date range.
+
+    - `data-table/columns.tsx`: Contains the column definition for both the transaction selection data table and the review data table.
+
+    - `data-table/review-table.tsx`: Defines the data table displayed in the transaction review page.
+
+    - `data-table/columns.tsx`: Defines the data table displayed in the transaction selection page.
+
+    - `ui/`: Folder containing all components used by shadcn data tables.
 
     - `footer.tsx`: Defines the footer component to display it consistently across all pages.
 
