@@ -5,12 +5,18 @@ import { Category, ClassifiedCategory } from '@/types/Category';
 import { CategorizedResult } from '@/types/CategorizedResult';
 import { get_accounts } from '@/actions/quickbooks';
 import { batchQueryLLM } from '@/actions/llm';
+import {
+  addTransactions,
+  getTopCategoriesForTransaction,
+} from '@/actions/transactionDatabase';
 import Fuse from 'fuse.js';
 
 export const classifyTransactions = async (
   categorizedTransactions: Transaction[],
   uncategorizedTransactions: Transaction[]
 ) => {
+  addTransactions(categorizedTransactions);
+
   try {
     // Get valid categories from QuickBooks.
     const validCategories: Category[] = await fetchValidCategories();
@@ -20,8 +26,7 @@ export const classifyTransactions = async (
 
     const noMatches: Transaction[] = [];
 
-    // Iterate through the uncategorized transactions and classify them.
-    uncategorizedTransactions.forEach(uncategorized => {
+    for (const uncategorized of uncategorizedTransactions) {
       try {
         // Search for the uncategorized transaction's name in the cataloged transactions.
         const matches = fuse.search(uncategorized.name);
@@ -44,7 +49,21 @@ export const classifyTransactions = async (
 
         // If no valid categories are found, add the transaction to the no matches array.
         if (possibleValidCategories.length === 0) {
-          noMatches.push(uncategorized);
+          const topCategories = await getTopCategoriesForTransaction(
+            uncategorized.name,
+            validCategories
+          );
+
+          if (topCategories.length === 0) {
+            noMatches.push(uncategorized);
+          } else {
+            results[uncategorized.transaction_ID] = topCategories.map(
+              category => ({
+                ...category,
+                classifiedBy: 'Database Lookup',
+              })
+            );
+          }
         } else {
           // Otherwise, add the transaction and its possible categories to the results array.
           results[uncategorized.transaction_ID] = possibleValidCategories;
@@ -58,7 +77,7 @@ export const classifyTransactions = async (
           'moving on...'
         );
       }
-    });
+    }
 
     // If there are transactions with no matches, send them to the LLM API.
     if (noMatches.length > 0) {
@@ -67,20 +86,37 @@ export const classifyTransactions = async (
         // Await for the LLM API response and add the results to the results array.
         llmApiResponse = await sendToLLMApi(noMatches, validCategories);
         if (llmApiResponse) {
-          // For each result, add the transaction ID and possible categories to the results array.
-          llmApiResponse.forEach((llmResult: CategorizedResult) => {
+          for (const llmResult of llmApiResponse) {
+            console.log('LLM Result:', llmResult);
+
             results[llmResult.transaction_ID] =
               llmResult.possibleCategories.map(category => ({
                 ...category,
                 classifiedBy: 'LLM API',
               }));
-          });
+
+            const transactionToAdd = uncategorizedTransactions.find(
+              transaction =>
+                transaction.transaction_ID === llmResult.transaction_ID
+            );
+
+            if (transactionToAdd) {
+              const categorizedTransactionsToAdd =
+                llmResult.possibleCategories.map(category => ({
+                  ...transactionToAdd,
+                  category: category.name,
+                }));
+
+              await addTransactions(categorizedTransactionsToAdd);
+            }
+          }
         }
       } catch (error) {
         // Catch any errors and log them to the console.
         console.log('Error from LLM API usage: ', error);
       }
     }
+    console.log('Results:', results);
     return results;
   } catch (error) {
     // Catch any errors, log them to the console and return them.
