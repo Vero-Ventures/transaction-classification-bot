@@ -221,16 +221,22 @@
 - **Select Transactions Page:**
   The user is shown a selection of un-categorized expense transactions from the past 2 years.
 
+  The user is given a search filter that allows them to search for transactions based off of the name/payee of the transaction.
+
   If the user wants to see transactions from a specific date range they can use the date selectors. This lets the user set the start date or the end date for the range of transactions.
 
-  The user can then sort the transactions by date or amount by clicking on the label of those columns. Clicking the label again swaps between ascending and descending.
+  The user can then sort the transactions by all the available fields by clicking on the label of those columns. Clicking the label again swaps between ascending and descending.
 
   Finally, the user can select transactions one at a time by clicking on them, causing them to be highlighted blue. The user can also mass select all transactions by clicking the button in the top left of the table. After selecting transactions the user can click the submit button on the top left to continue.
 
 - **Review Transactions & Return:**
   Once the user has submitted their transactions and the responses have been fetched, it is time to review the classifications. The user can see all their transactions and an input element with the categorization inside.
 
-  The user can click on the input element to see a dropdown of predicted catagories. The user then selects the categorization from this dropdown that fits the transaction. Finally the user clicks the save button in the top left to update the transactions in their QuickBooks account.
+  The user can click on the input element to see a dropdown of predicted categories. The user then selects the categorization from this dropdown that fits the transaction.
+
+  After selecting the reviewing the categories of each transactions, the user can then select which ones they want to save.
+
+  Finally, the user can the press the save button to save the categorized transactions. These changes will then be reflected back in their Quickbooks account.
 
   Once the user has finished updating their transactions, a pop-up will appear. This pop-up informs the user that the transactions have been updated and saved and will redirect them back to the selection home page.
 
