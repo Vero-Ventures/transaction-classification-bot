@@ -12,9 +12,25 @@ datasource db {
 }
 
 model User {
-  id    Int    @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   first_name String
-  last_name String
-  email String @unique
-  industry String
+  last_name  String
+  email      String @unique
+  industry   String
+}
+
+model TransactionClassification {
+  id              Int              @id @default(autoincrement())
+  transactionName String           @unique
+  classifications Classification[]
+}
+
+model Classification {
+  id                          Int                       @id @default(autoincrement())
+  category                    String
+  count                       Int
+  transactionClassificationId Int
+  transactionClassification   TransactionClassification @relation(fields: [transactionClassificationId], references: [id], onDelete: Cascade)
+
+  @@unique([transactionClassificationId, category])
 }
