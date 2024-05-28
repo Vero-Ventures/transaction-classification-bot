@@ -46,9 +46,6 @@ export default function ReviewPage({
   const handleSave = async (selectedRows: CategorizedTransaction[]) => {
     setIsSaving(true);
     try {
-      console.log('selectedRows:', selectedRows);
-      console.log('selectedCategories:', selectedCategories);
-      console.log('categorizationResults:', categorizationResults);
       await Promise.all(
         selectedRows.map(async transaction => {
           const transactionID = transaction.transaction_ID;
@@ -56,9 +53,9 @@ export default function ReviewPage({
           const purchaseObj = await find_purchase(transactionID, false);
 
           // get id of the selected category
-          const category = selectedCategories[transactionID];
+          const categoryName = selectedCategories[transactionID];
           const accountID = transaction.categories.find(
-            category => category.name === selectedCategories[transactionID]
+            category => category.name === categoryName
           )?.id;
 
           // update the purchase object with the selected category
