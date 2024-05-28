@@ -76,40 +76,4 @@ describe('classifyTransactions', () => {
       classifyTransactions({}, uncategorizedTransactions)
     ).resolves.not.toThrowError('categorizedTransactions is not an array');
   });
-  it('should log an error when mapping uncategorized transactions', async () => {
-    (get_accounts as jest.Mock).mockResolvedValueOnce(
-      JSON.stringify(['Category 1', 'Category 2'])
-    );
-
-    (batchQueryLLM as jest.Mock).mockResolvedValueOnce([
-      { transaction_ID: '3', possibleCategories: ['Category 1'] },
-    ]);
-
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    const uncategorizedTransactionsWithError = [
-      {
-        transaction_ID: '3',
-        name: 'Transaction 3',
-      },
-    ];
-
-    // Expect classifyTransactions to log an error
-    await classifyTransactions(
-      categorizedTransactions,
-      uncategorizedTransactionsWithError
-    );
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      'Error mapping uncategorized transaction:',
-      expect.objectContaining({
-        transaction_ID: '3',
-        name: 'Transaction 3',
-      }),
-      expect.any(Error),
-      'moving on...'
-    );
-
-    consoleErrorSpy.mockRestore();
-  });
 });

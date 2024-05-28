@@ -10,6 +10,11 @@ module.exports = {
     '!**/*.d.ts',
     '!**/coverage/**',
     '!**/tailwind.config.ts',
+    // e2e testing
+    '!**/components/**',
+    '!**/app/home/**',
+    '!**/app/test/**',
+    '!**/app/classify/**',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
