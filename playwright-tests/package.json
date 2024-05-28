@@ -3,41 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
-    "coverage": "npx nyc --reporter=lcov --reporter=text npx playwright test"
+    "test": "npx playwright test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "^1.0.0",
     "@playwright/test": "^1.44.0",
     "@types/node": "^20.12.12",
-    "nyc": "^15.1.0",
     "playwright": "^1.44.1",
     "vite-plugin-istanbul": "^6.0.2"
   },
   "dependencies": {
     "dotenv": "^16.4.5"
-  },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "all": true,
-    "include": [
-      "../frontend/**/*.{ts,tsx}",
-      "../backend/**/*.py"
-    ],
-    "exclude": [
-      "../playwright-tests/**",
-      "playwright.config.ts",
-      "**/node_modules/**"
-    ],
-    "reporter": [
-      "lcov",
-      "text",
-      "html"
-    ],
-    "report-dir": "./coverage"
   }
 }
