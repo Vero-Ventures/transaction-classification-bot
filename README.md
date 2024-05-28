@@ -80,19 +80,19 @@
     - Tailwind CSS
     - Next.js
     - Fuse.js
+    - Shadcn
 
   - **Backend:**
 
-    - Python
-    - Docker
-    - Llama3-ChatQA-1.5
     - Google Knowledge Graph
-    - Google Gemini 1.5 Flash / OpenAI 3.5 Turbo
+    - Google Gemini 1.5 Flash
+    - OpenAI 3.5 Turbo
 
   - **Database:**
 
     - Prisma
     - Postgresql
+    - Supabase
 
   - **QuickBooks:**
     - QuickBooks API
@@ -268,6 +268,46 @@
 
 ## **Deployment**
 
-- **Deployment Instructions:** Step-by-step guide on how to deploy the project.
+- **Deployment Instructions:**
 
-- **Environment Configurations:** Configuration settings for different environments (development, staging, production).
+  1. Fork the repository to your own GitHub account.
+  2. Import the repository into your preferred CI/CD platform. (e.g. Vercel, Netlify, Heroku)
+  3. Set up environment variables for the project.
+  4. Deploy the project.
+
+- **Environment Variables:**
+
+```bash
+# Connect to Supabase via connection pooling with Supavisor.
+# Add ?pgbouncer=true to the end of the URL, without it prisma was occasionally throwing errors.
+DATABASE_URL=
+
+# Direct connection to the database. Used for migrations.
+DIRECT_URL=
+
+# Set this to 'development' for local development and 'production' for deployment.
+NODE_ENV=
+
+# QuickBooks API keys, you can get these from the QuickBooks Developer Dashboard.
+CLIENT_ID=
+CLIENT_SECRET=
+
+# NextAuth keys, you can generate a secret with 'openssl rand -base64 32'.
+NEXTAUTH_SECRET=
+
+# Google API key for the custom search engine, you can get this from the Google Developer Console.
+GOOGLE_API_KEY=
+GOOGLE_CSE_CX=
+
+# Set to 'true' to enable the Google Custom Search Engine.
+ENABLE_GOOGLE_CSE=
+
+# Set to 'openai' or 'google' to choose the AI provider.
+AI_PROVIDER=
+
+# Google API key for the generative AI.
+GOOGLE_GENERATIVE_AI_API_KEY=
+
+# OpenAI API key for the generative AI.
+OPENAI_API_KEY=
+```
