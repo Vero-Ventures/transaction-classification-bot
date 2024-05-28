@@ -266,6 +266,17 @@
 
 - **Test Coverage:** Information on test coverage and any tools used.
 
+## **Development**
+
+1. Clone the repository to your local machine.
+2. Run `cd frontend` to navigate to the frontend directory.
+3. Run `npm install` to install all the dependencies.
+4. Run `npm run dev` to start the development server.
+5. Navigate to `http://localhost:3000` in your browser to view the app.
+
+Note: find env variables notes at the bottom of the README.
+As well as a example.env file in the root of the frontend folder.
+
 ## **Deployment**
 
 - **Deployment Instructions:**
