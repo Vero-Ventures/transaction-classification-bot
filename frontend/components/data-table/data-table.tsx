@@ -115,6 +115,10 @@ export function DataTable({
                 .getAllColumns()
                 .filter(column => column.getCanHide())
                 .map(column => {
+                  let field = column.id;
+                  if (column.id === 'transaction_type') {
+                    field = 'Type';
+                  }
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
@@ -123,7 +127,7 @@ export function DataTable({
                       onCheckedChange={value =>
                         column.toggleVisibility(!!value)
                       }>
-                      {column.id}
+                      {field}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
