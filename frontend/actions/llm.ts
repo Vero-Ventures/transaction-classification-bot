@@ -1,33 +1,51 @@
 'use server';
 
+import { google } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 import { Transaction } from '@/types/Transaction';
 import { CategorizedResult } from '@/types/CategorizedResult';
 import { Category } from '@/types/Category';
 import { fetchCustomSearch } from './customsearch';
 import { fetchKnowledgeGraph } from './knowledgegraph';
 
-const url = process.env.LLM_API_URL || '';
-const apiKey = process.env.LLM_API_KEY || '';
+const provider = process.env.AI_PROVIDER;
+const model =
+  provider === 'google'
+    ? google('models/gemini-1.5-flash')
+    : openai('gpt-3.5-turbo');
 
 const basePrompt =
-  'Using only provided list of categories, What type of business expense would a transaction from $NAME be? Categories: $CATEGORIES';
+  'Using only provided list of categories, What type of business expense would a transaction from "$NAME" be? Categories: $CATEGORIES';
+const SystemInstructions =
+  'You are an assistant that provides concise answers. \
+You are helping a user categorize their transaction for accountant business expenses purposes. \
+Only respond with the category that best fits the transaction based on the provided description and categories. \
+If no description is provided, try to use the name of the transaction to infer the category. \
+If you are unsure, respond with "None" ';
 
 export async function queryLLM(query: string, context: string) {
   try {
-    const response = await fetch(`${url}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-      },
-      body: JSON.stringify({
-        prompt: query,
-        context: context,
-      }),
+    const response = await generateText({
+      model,
+      system: SystemInstructions,
+      messages: [
+        {
+          role: 'user',
+          content: 'Description: ' + context,
+        },
+        {
+          role: 'user',
+          content: query,
+        },
+      ],
     });
 
-    return response.json();
+    // console.log('LLM response:', response.text);
+
+    return response.text;
   } catch (error) {
+    // Log any errors that occur.
     console.error('Error sending query:', error);
   }
 }
@@ -36,12 +54,13 @@ export async function batchQueryLLM(
   transactions: Transaction[],
   categories: Category[]
 ) {
-  const threshold = 100; // resultScore threshold for Knowledge Graph API
+  const threshold = 10; // resultScore threshold for Knowledge Graph API
 
   // Extract category names from Category objects
   const validCategoriesNames = categories.map(category => category.name);
   console.log('Categories Names:', validCategoriesNames);
 
+  // Generate a list of contexts for each transaction.
   const contextPromises = transactions.map(async (transaction: Transaction) => {
     const prompt = basePrompt
       .replace('$NAME', transaction.name)
@@ -55,11 +74,12 @@ export async function batchQueryLLM(
     );
     // console.log('\nDescriptions from KG:', descriptions);
 
-    // Check if descriptions are over threshold, otherwise use Custom Search API snippets
+    // Check if descriptions are over threshold and get the detailed description.
     let description;
     if (descriptions.length > 0) {
       description = descriptions[0].detailedDescription;
     } else {
+      // Otherwise use Custom Search API snippets.
       const searchResults = (await fetchCustomSearch(transaction.name)) || [];
       description =
         searchResults.length > 0
@@ -68,25 +88,24 @@ export async function batchQueryLLM(
     }
 
     // console.log('\nDescription:', description);
-
+    // Return the transaction ID, prompt, and context.
     return {
       transaction_ID: transaction.transaction_ID,
       prompt,
-      context: `Description: ${description}`,
+      context: description,
     };
   });
+  // Wait for all contexts to be generated.
   const contexts = await Promise.all(contextPromises);
-
+  // Create a list of results for each context element.
   const results: CategorizedResult[] = [];
   for (const { transaction_ID, prompt, context } of contexts) {
     const response = await queryLLM(prompt, context);
 
-    console.log('\nLLM raw response:', response);
-
     // Check if response contains a valid category from the list
     let possibleCategories: Category[] = [];
-    if (response && response.response) {
-      const responseText = response.response.toLowerCase();
+    if (response && response) {
+      const responseText = response.toLowerCase();
 
       const possibleValidCategories = validCategoriesNames.filter(category =>
         responseText.includes(category.toLowerCase())
@@ -99,12 +118,16 @@ export async function batchQueryLLM(
       );
     }
 
+    // const name = prompt.split('from ')[1].split(' be?')[0];
+    // console.log('name:', name, ' classified as:', possibleCategories, ' with context:', context);
+
+    // Add the transaction ID and possible categories to the results.
     results.push({
       transaction_ID,
       possibleCategories,
       classifiedBy: 'LLM',
     });
   }
-
+  // Return the results.
   return results;
 }

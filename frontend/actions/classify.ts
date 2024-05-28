@@ -18,20 +18,23 @@ export const classifyTransactions = async (
   addTransactions(categorizedTransactions);
 
   try {
+    // Get valid categories from QuickBooks.
     const validCategories: Category[] = await fetchValidCategories();
-
     const fuse = createFuseInstance(categorizedTransactions);
-
+    // Create arrays for the results and transactions with no matches.
     const results: Record<string, ClassifiedCategory[]> = {};
+
     const noMatches: Transaction[] = [];
 
     for (const uncategorized of uncategorizedTransactions) {
       try {
+        // Search for the uncategorized transaction's name in the cataloged transactions.
         const matches = fuse.search(uncategorized.name);
         const possibleCategoriesSet = new Set(
           matches.map(match => match.item.category)
         );
 
+        // Filter out any categories found in the matches that are not valid.
         const possibleValidCategories = Array.from(possibleCategoriesSet)
           .map(possibleCategory =>
             validCategories.find(
@@ -44,6 +47,7 @@ export const classifyTransactions = async (
             classifiedBy: 'Fuzzy or Exact Match by Fuse',
           }));
 
+        // If no valid categories are found, add the transaction to the no matches array.
         if (possibleValidCategories.length === 0) {
           const topCategories = await getTopCategoriesForTransaction(
             uncategorized.name,
@@ -61,9 +65,11 @@ export const classifyTransactions = async (
             );
           }
         } else {
+          // Otherwise, add the transaction and its possible categories to the results array.
           results[uncategorized.transaction_ID] = possibleValidCategories;
         }
       } catch (error) {
+        // Catch any errors and log them to the console.
         console.error(
           'Error mapping uncategorized transaction:',
           uncategorized,
@@ -73,13 +79,16 @@ export const classifyTransactions = async (
       }
     }
 
+    // If there are transactions with no matches, send them to the LLM API.
     if (noMatches.length > 0) {
       let llmApiResponse;
       try {
+        // Await for the LLM API response and add the results to the results array.
         llmApiResponse = await sendToLLMApi(noMatches, validCategories);
         if (llmApiResponse) {
           for (const llmResult of llmApiResponse) {
             console.log('LLM Result:', llmResult);
+
             results[llmResult.transaction_ID] =
               llmResult.possibleCategories.map(category => ({
                 ...category,
@@ -103,14 +112,14 @@ export const classifyTransactions = async (
           }
         }
       } catch (error) {
+        // Catch any errors and log them to the console.
         console.log('Error from LLM API usage: ', error);
       }
     }
-
     console.log('Results:', results);
-
     return results;
   } catch (error) {
+    // Catch any errors, log them to the console and return them.
     console.error('Error classifying transactions:', error);
     return { error: 'Error getting categorized transactions:' };
   }
