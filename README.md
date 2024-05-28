@@ -2,31 +2,21 @@
 
 - [**Project Overview**](#project-overview)
 
-- [**Installation (Need Help)**](#installation)
-
 - [**Project Structure**](#project-structure)
 
 - [**Architecture and Design**](#architecture-and-design)
 
 - [**Usage**](#usage)
 
-- [**Testing (Need Help)**](#testing)
+- [**Testing**](#testing)
 
-- [**Deployment (Need Help)**](#deployment)
+- [**Deployment**](#deployment)
 
 ## **Project Overview**
 
 - **Description:** An application that allows users to classify bank transactions in the online accounting software QuickBooks Online. It makes use of the QuickBooks API to read and update transaction data in the users profile. The app provides a simple use experience focused on being quick, easy, and minimizing the need for repeated actions.
 
 - **Status:** The project is a fully realized version of the MVP that was defined at the start of the project. Also implements many additional features the team discovered along the way.
-
-## **Installation**
-
-- **Prerequisites:** Software, tools, and libraries needed before installation.
-
-- **Setup:** Step-by-step instructions on how to set up the project locally.
-
-- **Configuration:** Any necessary configurations, such as environment variables + an `env.example` file.
 
 ## Project Structure
 
@@ -275,14 +265,6 @@
 ### Return to Start
 
 ![Success Pop-Up](readme-resources/readme_return.png)
-
-## **Testing**
-
-- **Test Setup:** Instructions for setting up the testing environment.
-
-- **Running Tests:** How to run the tests and interpret the results.
-
-- **Test Coverage:** Information on test coverage and any tools used.
 
 ## **Development**
 
