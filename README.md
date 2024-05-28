@@ -234,7 +234,7 @@
 
   The user can click on the input element to see a dropdown of predicted categories. The user then selects the categorization from this dropdown that fits the transaction.
 
-  After selecting the reviewing the categories of each transactions, the user can then select which ones they want to save.
+  After reviewing the categories of each transaction, the user can then select which ones they want to save.
 
   Finally, the user can the press the save button to save the categorized transactions. These changes will then be reflected back in their Quickbooks account.
 
