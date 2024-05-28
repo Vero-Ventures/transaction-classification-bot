@@ -1,47 +1,96 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { DataTable } from '@/components/data-table/data-table';
-import { Transaction } from '@/types/Transaction';
+import { useState } from 'react';
+import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
-import { filterUncategorized } from '@/utils/filter-transactions';
+import { filterCategorized } from '@/utils/filter-transactions';
+import { ClassifiedCategory } from '@/types/Category';
+import { classifyTransactions } from '@/actions/classify';
+import SelectionPage from '@/components/home/selection';
+import ReviewPage from '@/components/home/review';
 
 export default function ShadcnPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categorizedTransactions, setCategorizedTransactions] = useState<
+    CategorizedTransaction[]
+  >([]);
+  const [categorizationResults, setCategorizationResults] = useState<
+    Record<string, ClassifiedCategory[]>
+  >({});
   const [isClassifying, setIsClassifying] = useState(false);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await get_transactions();
-        const result = JSON.parse(response);
-        if (result[0].result === 'Success') {
-          setTransactions(result.slice(1));
-        }
-      } catch (error) {
-        console.error('Error fetching purchases:', error);
-      }
-    };
-
-    fetchTransactions();
-  }, []);
+  const createCategorizedTransactions = (
+    selectedRows: Transaction[],
+    result: Record<string, ClassifiedCategory[]>
+  ) => {
+    const categorizedTransactions: CategorizedTransaction[] = [];
+    for (const transaction of selectedRows) {
+      const test = result[transaction.transaction_ID];
+      test.push({
+        id: '1',
+        name: 'test',
+      } as ClassifiedCategory);
+      categorizedTransactions.push({
+        date: transaction.date,
+        transaction_type: transaction.transaction_type,
+        transaction_ID: transaction.transaction_ID,
+        name: transaction.name,
+        account: transaction.account,
+        categories: result[transaction.transaction_ID] || [],
+        amount: transaction.amount,
+      });
+    }
+    return categorizedTransactions;
+  };
 
   const handleClassify = async (selectedRows: Transaction[]) => {
     setIsClassifying(true);
-    setTimeout(() => {
-      console.log('Classifying rows:', selectedRows);
-      setIsClassifying(false);
-    }, 3000);
+    // Get a reference for the current date and the date 5 years ago.
+    const today = new Date();
+    const five_years_ago = new Date(
+      today.getFullYear() - 5,
+      today.getMonth(),
+      today.getDate()
+    );
+
+    // Convert the dates to strings in the format 'YYYY-MM-DD'.
+    const start_date = today.toISOString().split('T')[0];
+    const end_date = five_years_ago.toISOString().split('T')[0];
+
+    // Get the past transactions from QuickBooks.
+    const pastTransactions = await get_transactions(start_date, end_date);
+    const pastTransactionsResult = JSON.parse(pastTransactions).slice(1);
+
+    // Pass the transactions to classify and the past 5 years of transactions.
+    const result: Record<string, ClassifiedCategory[]> | { error: string } =
+      await classifyTransactions(
+        filterCategorized(pastTransactionsResult),
+        selectedRows
+      );
+    if ('error' in result) {
+      console.error('Error classifying transactions:', result.error);
+      return;
+    }
+
+    setCategorizationResults(result);
+    setCategorizedTransactions(
+      createCategorizedTransactions(selectedRows, result)
+    );
+    setIsClassifying(false);
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">My Transactions</h1>
-      <DataTable
-        transactions={filterUncategorized(transactions)}
-        isClassifying={isClassifying}
-        handleClassify={handleClassify}
-      />
+      {categorizedTransactions.length > 0 ? (
+        <ReviewPage
+          categorizedTransactions={categorizedTransactions}
+          categorizationResults={categorizationResults}
+        />
+      ) : (
+        <SelectionPage
+          handleClassify={handleClassify}
+          isClassifying={isClassifying}
+        />
+      )}
     </div>
   );
 }
