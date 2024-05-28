@@ -156,9 +156,6 @@ export function ReviewTable({
                   .rows.map(row => row.original)
               )
             }
-            disabled={
-              isSaving || table.getFilteredSelectedRowModel().rows.length === 0
-            }
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
             {isSaving ? 'Saving...' : 'Save'}
           </Button>
