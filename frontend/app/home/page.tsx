@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
 import { filterCategorized } from '@/utils/filter-transactions';
@@ -13,8 +13,7 @@ import { classifyTransactions } from '@/actions/classify';
 import SelectionPage from '@/components/home/selection';
 import ReviewPage from '@/components/home/review';
 
-
-export default function ShadcnPage() {
+export default function HomePage() {
   const [categorizedTransactions, setCategorizedTransactions] = useState<
     CategorizedTransaction[]
   >([]);
@@ -22,20 +21,7 @@ export default function ShadcnPage() {
     Record<string, ClassifiedCategory[]>
   >({});
 
-  const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
-
   useEffect(() => {
-    const fetchPurchases = async () => {
-      try {
-        const response = await get_transactions();
-        const result = JSON.parse(response);
-        if (result[0].result === 'Success') {
-          setPurchases(result.slice(1));
-        }
-      } catch (error) {
-        console.error('Error fetching purchases:', error);
-      }
-    };
     const updateIndustry = async () => {
       const industry = await find_industry();
       const session = await getSession();
@@ -65,7 +51,6 @@ export default function ShadcnPage() {
       }
     };
 
-    fetchPurchases();
     updateIndustry();
   }, []);
 
@@ -89,7 +74,6 @@ export default function ShadcnPage() {
     }
     return categorizedTransactions;
   };
-
 
   const handleClassify = async (selectedRows: Transaction[]) => {
     setIsClassifying(true);

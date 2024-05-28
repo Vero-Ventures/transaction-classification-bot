@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
 import './globals.css';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   title: 'TCB',
@@ -20,6 +22,8 @@ export default function RootLayout({
         <Navbar />
         <main className="animate-fadeIn">{children}</main>
         <Footer />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
