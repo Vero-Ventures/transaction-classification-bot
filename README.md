@@ -312,8 +312,12 @@ CLIENT_SECRET=
 # NextAuth keys, you can generate a secret with 'openssl rand -base64 32'.
 NEXTAUTH_SECRET=
 
-# Google API key for the custom search engine, you can get this from the Google Developer Console.
+# Google API key for google cloud, you can get this from the Google Developer Console.
+# Enable the following APIs
+# https://console.cloud.google.com/apis/library/kgsearch.googleapis.com
+# https://console.cloud.google.com/apis/library/customsearch.googleapis.com
 GOOGLE_API_KEY=
+# Generate a CX at https://cse.google.com/cse/create/new
 GOOGLE_CSE_CX=
 
 # Set to 'true' to enable the Google Custom Search Engine.
