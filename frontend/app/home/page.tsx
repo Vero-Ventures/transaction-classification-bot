@@ -5,9 +5,14 @@ import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { get_transactions } from '@/actions/quickbooks';
 import { filterCategorized } from '@/utils/filter-transactions';
 import { ClassifiedCategory } from '@/types/Category';
+
+import { find_industry } from '@/actions/quickbooks';
+import { getSession } from 'next-auth/react';
+
 import { classifyTransactions } from '@/actions/classify';
 import SelectionPage from '@/components/home/selection';
 import ReviewPage from '@/components/home/review';
+
 
 export default function ShadcnPage() {
   const [categorizedTransactions, setCategorizedTransactions] = useState<
@@ -16,6 +21,54 @@ export default function ShadcnPage() {
   const [categorizationResults, setCategorizationResults] = useState<
     Record<string, ClassifiedCategory[]>
   >({});
+
+  const [selectedPurchases, setSelectedPurchases] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      try {
+        const response = await get_transactions();
+        const result = JSON.parse(response);
+        if (result[0].result === 'Success') {
+          setPurchases(result.slice(1));
+        }
+      } catch (error) {
+        console.error('Error fetching purchases:', error);
+      }
+    };
+    const updateIndustry = async () => {
+      const industry = await find_industry();
+      const session = await getSession();
+      const email = session?.user?.email;
+
+      if (email) {
+        try {
+          const response = await fetch('/api/update-industry', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ industry, email }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update industry');
+          }
+
+          const result = await response.json();
+          console.log(result.message);
+        } catch (error) {
+          console.error('Error updating industry:', error);
+        }
+      } else {
+        console.error('No user email found in session');
+      }
+    };
+
+    fetchPurchases();
+    updateIndustry();
+  }, []);
+
   const [isClassifying, setIsClassifying] = useState(false);
 
   const createCategorizedTransactions = (
@@ -36,6 +89,7 @@ export default function ShadcnPage() {
     }
     return categorizedTransactions;
   };
+
 
   const handleClassify = async (selectedRows: Transaction[]) => {
     setIsClassifying(true);
