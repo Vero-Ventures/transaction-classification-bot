@@ -2,7 +2,7 @@
 
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import { generateText, convertToCoreMessages } from 'ai';
 import { Transaction } from '@/types/Transaction';
 import { CategorizedResult } from '@/types/CategorizedResult';
 import { Category } from '@/types/Category';
@@ -22,26 +22,71 @@ const SystemInstructions =
 You are helping a user categorize their transaction for accountant business expenses purposes. \
 Only respond with the category that best fits the transaction based on the provided description and categories. \
 If no description is provided, try to use the name of the transaction to infer the category. \
-If you are unsure, respond with "None" ';
+If you are unsure, respond with "None" followed by just the search query to search the web.';
+
+export interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export async function queryLLM(query: string, context: string) {
   try {
-    const response = await generateText({
+    // Define the messages to send to the model.
+    let messages: Message[] = [
+      {
+        role: 'user' as const,
+        content: 'Description: ' + context,
+      },
+      {
+        role: 'user' as const,
+        content: query,
+      },
+    ];
+
+    let response = await generateText({
       model,
       system: SystemInstructions,
-      messages: [
-        {
-          role: 'user',
-          content: 'Description: ' + context,
-        },
-        {
-          role: 'user',
-          content: query,
-        },
-      ],
+      messages: messages,
     });
 
     // console.log('LLM response:', response.text);
+
+    // If the response is 'None', search the web for additional information.
+    if (response.text.startsWith('None')) {
+      const searchQuery = response.text.split('None')[1].trim();
+      const searchResults = (await fetchCustomSearch(searchQuery)) || [];
+      const additionalInfo =
+        searchResults.length > 0
+          ? searchResults.map(result => result.snippet).join(' ')
+          : 'No results found';
+
+      console.log('Search Query:', searchQuery);
+      console.log('Additional Info:', additionalInfo);
+
+      if (searchResults.length === 0) {
+        return '';
+      } else {
+        messages = [
+          ...messages,
+          {
+            role: 'assistant' as const,
+            content: response.text,
+          },
+          {
+            role: 'user' as const,
+            content:
+              'Here is some additional information from the web: ' +
+              additionalInfo,
+          },
+        ];
+
+        response = await generateText({
+          model,
+          system: SystemInstructions,
+          messages: messages,
+        });
+      }
+    }
 
     return response.text;
   } catch (error) {
@@ -74,17 +119,12 @@ export async function batchQueryLLM(
     );
     // console.log('\nDescriptions from KG:', descriptions);
 
-    // Check if descriptions are over threshold and get the detailed description.
+    // Check if descriptions exist otherwise use a default message
     let description;
     if (descriptions.length > 0) {
       description = descriptions[0].detailedDescription;
     } else {
-      // Otherwise use Custom Search API snippets.
-      const searchResults = (await fetchCustomSearch(transaction.name)) || [];
-      description =
-        searchResults.length > 0
-          ? searchResults.map(result => result.snippet).join(' ')
-          : 'No description available';
+      description = 'No description available';
     }
 
     // console.log('\nDescription:', description);
