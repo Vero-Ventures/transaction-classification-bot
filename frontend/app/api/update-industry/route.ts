@@ -1,5 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { options } from '../auth/[...nextauth]/options';
+import prisma from '@/lib/db';
 
 export async function POST(req: Request) {
   // Get the current session and return an unauthorized response if it doesn't exist.
