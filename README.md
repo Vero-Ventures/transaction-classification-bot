@@ -10,6 +10,8 @@
 
 - [**Testing**](#testing)
 
+- [**Pre-commit**](#pre-commit)
+
 - [**Deployment**](#deployment)
 
 ## **Project Overview**
@@ -276,6 +278,39 @@
 
 Note: find env variables notes at the bottom of the README.
 As well as a example.env file in the root of the frontend folder.
+
+## **Testing**
+
+- **Testing Instructions:**
+
+  For Playwright e2e testing
+
+  1. Run `cd playwright-tests` to navigate to playwright directory.
+  2. Run `npm install` to install all dependancies.
+  3. Run `npm run test` to run the playwright tests.
+  4. See the results of the tests.
+
+  Note: For the play wright tests to work specifically for my case, I ran the playwright tests and added the line
+  `await page.pause()` during the login authentication to complete the one time phone/email verification.
+
+  For Jest code coverage
+
+  1. Run `cd frontend` to navigate to frontend directory.
+  2. Run `npm install` to install all dependancies.
+  3. Run `npm run coverage` to run the code coverage.
+  4. See the results of the code coverage.
+  5. Pushing any changes to the repo will upload a coverage report to codecov.
+
+  Note: This branch is currently unmerged due to a vercel error that I do not have access to which was introduced when configurations to jest was made.
+
+## **Pre-commit**
+
+- **Pre-commit Set-up:**
+
+  1. Run `cd frontend` to navigate to frontend directory.
+  2. Run `npm install` to install all dependancies.
+  3. Run `pre-commit run --all-files` to run the pre-commit with eslint and prettier formatting as well as Ruff. (Ruff obsolete due to deleted backend)
+  4. When attempting to make a commit, pre-commit will now scan your files and notify individuals when there are changes to be made.
 
 ## **Deployment**
 
