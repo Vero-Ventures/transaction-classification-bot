@@ -8,7 +8,7 @@ const Footer = () => {
         <p>&copy; 2024 Transaction Classification Bot. All rights reserved.</p>
         <div className="flex space-x-4">
           <Link href="/privacy-policy" className="hover:underline">
-            Privacy Policy
+            Privacy Policy & Terms of Service
           </Link>
           <Link href="https://github.com/Vero-Ventures/transaction-classification-bot">
             <FaGithub className="text-2xl hover:text-gray-400 transition-colors duration-300" />
