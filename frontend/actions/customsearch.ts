@@ -1,7 +1,9 @@
 'use server';
-import { google } from 'googleapis';
+import { google, customsearch_v1 } from 'googleapis';
 
-export async function fetchCustomSearch(query: string) {
+export async function fetchCustomSearch(
+  query: string
+): Promise<customsearch_v1.Schema$Result[]> {
   const enableCustomSearch = process.env.ENABLE_GOOGLE_CSE === 'false';
 
   if (enableCustomSearch) {
@@ -21,13 +23,11 @@ export async function fetchCustomSearch(query: string) {
 
       // If a response is returned, reformat and return the data.
       if (response.data.items) {
-        return response.data.items.map((item: any) => {
-          return {
-            title: item.title,
-            link: item.link,
-            snippet: item.snippet,
-          };
-        });
+        return response.data.items.map(item => ({
+          title: item.title,
+          link: item.link,
+          snippet: item.snippet,
+        }));
       } else {
         // If no response is returned, return an empty array.
         return [];
@@ -35,6 +35,7 @@ export async function fetchCustomSearch(query: string) {
     } catch (error) {
       // Log any errors that occur.
       console.error('Error fetching custom search:', error);
+      return [];
     }
   }
 }

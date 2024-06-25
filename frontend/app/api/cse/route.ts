@@ -3,7 +3,7 @@ import { fetchCustomSearch } from '@/actions/customsearch';
 export async function GET(req: Request, res: Response) {
   // Define the url and the query from the url.
   const url = new URL(req.url || '');
-  const query = url.searchParams.get('query') || '';
+  const query = url.searchParams.get('query') ?? '';
 
   try {
     // Fetch the custom search data with the provided query and return a success response.

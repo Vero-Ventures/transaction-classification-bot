@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
-import { get_transactions } from '@/actions/quickbooks';
+import { get_transactions, find_industry } from '@/actions/quickbooks';
 import { filterCategorized } from '@/utils/filter-transactions';
 import { ClassifiedCategory } from '@/types/Category';
-
-import { find_industry } from '@/actions/quickbooks';
 import { getSession } from 'next-auth/react';
 
 import { classifyTransactions } from '@/actions/classify';

@@ -18,4 +18,4 @@ const GET = async (req: Request, res: Response) => {
   return handler(req, res);
 };
 
-export { GET as GET, handler as POST };
+export { GET, handler as POST };

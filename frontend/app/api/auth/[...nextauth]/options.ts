@@ -103,7 +103,7 @@ export const options: NextAuthOptions = {
               },
             });
             // Log the new user created in the database.
-            console.log(`New user created in db: ${user}`);
+            console.log(`New user created in db: ${JSON.stringify(user)}`);
           } catch (createError) {
             // Log an error and return false to indicate that the new user could not be created and the sign in failed.
             console.error('Error creating new user in db:', createError);
