@@ -171,27 +171,27 @@ export async function get_transactions(start_date = '', end_date = '') {
     // If no rows were returned, skip formatting the transactions and return the result field.
     if (results !== undefined) {
       // For each account object create a formatted transaction object and add it to the array.
-      for (const account of results) {
-        const [date, transactionType, name, accountValue, category, amount] =
-          account.ColData.map((col: ColData) => col.value);
-        const transactionId = account.ColData[1].id;
-
+      for (const transaction of results) {
+        // Check if the transaction is a summary row and skip it.
+        if (transaction.Summary) {
+          break;
+        }
         // Check account fields to skip any without valid field values.
         // Skip no-name transactions, transactions without an account, and transactions without an amount.
         if (
-          purchase_transactions.includes(transactionType) &&
-          name !== '' &&
-          amount !== ''
+          purchase_transactions.includes(transaction.ColData[1].value) &&
+          transaction.ColData[2].value !== '' &&
+          transaction.ColData[5].value !== ''
         ) {
           // Create a new formatted transaction object with the necessary fields.
           const newFormattedTransaction: Transaction = {
-            date,
-            transaction_type: transactionType,
-            transaction_ID: transactionId,
-            name,
-            account: accountValue,
-            category,
-            amount,
+            date: transaction.ColData[0].value,
+            transaction_type: transaction.ColData[1].value,
+            transaction_ID: transaction.ColData[1].id,
+            name: transaction.ColData[2].value,
+            account: transaction.ColData[3].value,
+            category: transaction.ColData[4].value,
+            amount: transaction.ColData[5].value,
           };
 
           // Add the transaction to the transactions array.
