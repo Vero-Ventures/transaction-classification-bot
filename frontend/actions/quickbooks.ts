@@ -1,13 +1,10 @@
 'use server';
 
-import { options } from '@/app/api/auth/[...nextauth]/options';
-import { getServerSession } from 'next-auth';
 import { Transaction } from '@/types/Transaction';
 import { Account } from '@/types/Account';
 import { Purchase } from '@/types/Purchase';
 import { QueryResult } from '@/types/QueryResult';
 import { create_qb_object } from '@/actions/qb_client';
-const QB = require('node-quickbooks');
 
 // Get all accounts from the QuickBooks API.
 export async function get_accounts() {
@@ -51,23 +48,22 @@ export async function get_accounts() {
     formatted_accounts.push(QueryResult);
 
     // For each account object, remove unnecessary fields and delete any inactive accounts.
-    for (let account = 0; account < results.length; account++) {
+    for (const account of results) {
       // Only add active accounts
-      if (results[account].Active) {
+      if (account.Active) {
         // Create a formatted account object with the necessary fields.
         const new_formatted_account: Account = {
-          id: results[account].Id,
-          name: results[account].Name,
-          active: results[account].Active,
-          classification: results[account].Classification,
-          account_type: results[account].AccountType,
-          account_sub_type: results[account].AccountSubType,
+          id: account.Id,
+          name: account.Name,
+          active: account.Active,
+          classification: account.Classification,
+          account_type: account.AccountType,
+          account_sub_type: account.AccountSubType,
         };
         // Add the account to the accounts array.
         formatted_accounts.push(new_formatted_account);
       }
     }
-
     // Return the formatted results.
     return JSON.stringify(formatted_accounts);
   } catch (error) {
@@ -168,29 +164,38 @@ export async function get_transactions(start_date = '', end_date = '') {
       'Expense',
     ];
 
+    interface ColData {
+      value: string;
+      id: string;
+    }
     // If no rows were returned, skip formatting the transactions and return the result field.
-    if (results != undefined) {
+    if (results !== undefined) {
       // For each account object create a formatted transaction object and add it to the array.
-      for (let account = 0; account < results.length; account++) {
+      for (const account of results) {
+        const [date, transactionType, name, accountValue, category, amount] =
+          account.ColData.map((col: ColData) => col.value);
+        const transactionId = account.ColData[1].id;
+
         // Check account fields to skip any without valid field values.
         // Skip no-name transactions, transactions without an account, and transactions without an amount.
         if (
-          purchase_transactions.includes(results[account].ColData[1].value) &&
-          results[account].ColData[2].value !== '' &&
-          results[account].ColData[5].value !== ''
+          purchase_transactions.includes(transactionType) &&
+          name !== '' &&
+          amount !== ''
         ) {
           // Create a new formatted transaction object with the necessary fields.
-          const new_formatted_transaction: Transaction = {
-            date: results[account].ColData[0].value,
-            transaction_type: results[account].ColData[1].value,
-            transaction_ID: results[account].ColData[1].id,
-            name: results[account].ColData[2].value,
-            account: results[account].ColData[3].value,
-            category: results[account].ColData[4].value,
-            amount: results[account].ColData[5].value,
+          const newFormattedTransaction: Transaction = {
+            date,
+            transaction_type: transactionType,
+            transaction_ID: transactionId,
+            name,
+            account: accountValue,
+            category,
+            amount,
           };
+
           // Add the transaction to the transactions array.
-          formatted_transactions.push(new_formatted_transaction);
+          formatted_transactions.push(newFormattedTransaction);
         }
       }
     }
@@ -264,11 +269,11 @@ export async function find_purchase(id: string, format_result: boolean) {
 
       // Initially the purchase category is set to None, as it is not always present in the results.
       // Now, check through the line field for the purchase category. It exists in the AccountBasedExpenseLineDetail field.
-      for (let i = 0; i < results.Line.length; i++) {
-        if (results.Line[i].DetailType === 'AccountBasedExpenseLineDetail') {
+      for (const line of results.Line) {
+        if (line.DetailType === 'AccountBasedExpenseLineDetail') {
           // If the purchase category is present, update the related field of the formatted results.
           formatted_result.purchase_category =
-            results.Line[i].AccountBasedExpenseLineDetail.AccountRef.name;
+            line.AccountBasedExpenseLineDetail.AccountRef.name;
           break;
         }
       }
@@ -295,13 +300,10 @@ export async function update_purchase(new_account_id: string, purchase: any) {
 
     // Use the purchase object passed to the function to update the purchase object.
     // Check each element in the line for the specific line that contains the categorizing account.
-    for (let i = 0; i < update_purchase.Line.length; i++) {
-      if (
-        update_purchase.Line[i].DetailType === 'AccountBasedExpenseLineDetail'
-      ) {
+    for (const line of update_purchase.Line) {
+      if (line.DetailType === 'AccountBasedExpenseLineDetail') {
         // If it is present, update the purchase category field of the formatted results.
-        update_purchase.Line[i].AccountBasedExpenseLineDetail.AccountRef.value =
-          new_account_id;
+        line.AccountBasedExpenseLineDetail.AccountRef.value = new_account_id;
         break;
       }
     }
@@ -331,17 +333,12 @@ export async function find_industry() {
   try {
     // Create the QuickBooks API calls object.
     const qbo = await create_qb_object();
-
-    // Create tracker to indicate if the query was successful or not.
-    let success = true;
-
     // Search for any company info objects.
     const response: any = await new Promise((resolve, reject) => {
       qbo.findCompanyInfos((err: Error, data: any) => {
         // If there is an error, check if it has a 'Fault' property
         // Then resolve the error to allow a formatted JSON error message to be passed to the caller.
         if (err && 'Fault' in err) {
-          success = false;
           resolve(err.Fault);
         }
         // If there is no error, resolve the data to allow the caller to access the results.
@@ -354,13 +351,10 @@ export async function find_industry() {
       response.QueryResponse.CompanyInfo[0].NameValue;
 
     // Iterate through the array to find the industry type.
-    for (let i = 0; i < company_name_value_array.length; i++) {
+    for (const item of company_name_value_array) {
       // If the industry type is found, return it.
-      if (
-        company_name_value_array[i].Name === 'QBOIndustryType' ||
-        company_name_value_array[i].Name === 'IndustryType'
-      ) {
-        return company_name_value_array[i].Value;
+      if (item.Name === 'QBOIndustryType' || item.Name === 'IndustryType') {
+        return item.Value;
       }
     }
 

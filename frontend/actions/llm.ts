@@ -2,7 +2,7 @@
 
 import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
-import { generateText, convertToCoreMessages } from 'ai';
+import { generateText } from 'ai';
 import { Transaction } from '@/types/Transaction';
 import { CategorizedResult } from '@/types/CategorizedResult';
 import { Category } from '@/types/Category';
@@ -17,12 +17,13 @@ const model =
 
 const basePrompt =
   'Using only provided list of categories, What type of business expense would a transaction from "$NAME" be? Categories: $CATEGORIES';
-const SystemInstructions =
-  'You are an assistant that provides concise answers. \
-You are helping a user categorize their transaction for accountant business expenses purposes. \
-Only respond with the category that best fits the transaction based on the provided description and categories. \
-If no description is provided, try to use the name of the transaction to infer the category. \
-If you are unsure, respond with "None" followed by just the search query to search the web.';
+const SystemInstructions = `
+  You are an assistant that provides concise answers.
+  You are helping a user categorize their transaction for accountant business expenses purposes.
+  Only respond with the category that best fits the transaction based on the provided description and categories.
+  If no description is provided, try to use the name of the transaction to infer the category.
+  If you are unsure, respond with "None" followed by just the search query to search the web.
+  `;
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -49,7 +50,9 @@ export async function queryLLM(query: string, context: string) {
       messages: messages,
     });
 
-    // console.log('LLM response:', response.text);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('LLM response:', response.text);
+    }
 
     // If the response is 'None', search the web for additional information.
     if (response.text.startsWith('None')) {
@@ -113,11 +116,18 @@ export async function batchQueryLLM(
 
     // Fetch detailed descriptions from the Knowledge Graph API
     const kgResults = (await fetchKnowledgeGraph(transaction.name)) || [];
-    // console.log('KG Results:', kgResults);
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('KG Results:', kgResults);
+    }
+
     const descriptions = kgResults.filter(
       result => result.resultScore > threshold
     );
-    // console.log('\nDescriptions from KG:', descriptions);
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\nDescriptions from KG:', descriptions);
+    }
 
     // Check if descriptions exist otherwise use a default message
     let description;
@@ -127,7 +137,10 @@ export async function batchQueryLLM(
       description = 'No description available';
     }
 
-    // console.log('\nDescription:', description);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\nDescription:', description);
+    }
+
     // Return the transaction ID, prompt, and context.
     return {
       transaction_ID: transaction.transaction_ID,
@@ -144,7 +157,7 @@ export async function batchQueryLLM(
 
     // Check if response contains a valid category from the list
     let possibleCategories: Category[] = [];
-    if (response && response) {
+    if (response) {
       const responseText = response.toLowerCase();
 
       const possibleValidCategories = validCategoriesNames.filter(category =>
@@ -158,8 +171,12 @@ export async function batchQueryLLM(
       );
     }
 
-    // const name = prompt.split('from ')[1].split(' be?')[0];
-    // console.log('name:', name, ' classified as:', possibleCategories, ' with context:', context);
+    if (process.env.NODE_ENV !== 'production') {
+      const name = prompt.split('from ')[1].split(' be?')[0];
+      console.log(
+        `name: ${name}, classified as: ${possibleCategories}, with context: ${context}`
+      );
+    }
 
     // Add the transaction ID and possible categories to the results.
     results.push({

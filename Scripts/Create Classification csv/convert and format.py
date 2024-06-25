@@ -13,8 +13,8 @@ for sheet_name in xls.sheet_names:
     print(f"\nBefore formatting {sheet_name}:")
     print(df.head())
 
-    df.drop(["Unnamed: 0"], axis=1, inplace=True)
-    df.dropna(subset=["Name", "Split"], inplace=True)
+    df = df.drop(["Unnamed: 0"], axis=1)
+    df = df.dropna(subset=["Name", "Split"])
 
     # rename columns
     df.rename(
