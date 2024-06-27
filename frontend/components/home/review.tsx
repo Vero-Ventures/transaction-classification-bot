@@ -83,6 +83,7 @@ export default function ReviewPage({
       <ReviewTable
         categorizedTransactions={categorizedTransactions}
         selectedCategories={selectedCategories}
+        categorizedResults={categorizationResults}
         handleCategoryChange={handleCategoryChange}
         handleSave={handleSave}
         isSaving={isSaving}

@@ -1,10 +1,11 @@
 import { Column, ColumnDef, Row, Table } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ConfidenceBar } from '@/components/ui/confidence-bar';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import { ArrowUpDown } from 'lucide-react';
-import { Category } from '@/types/Category';
+import { Category, ClassifiedCategory } from '@/types/Category';
 
 // Define button for a sortable header
 const sortableHeader = (
@@ -178,6 +179,7 @@ export const selectionColumns: ColumnDef<Transaction>[] = [
 
 export const reviewColumns = (
   selectedCategories: Record<string, string>,
+  categorizedResults: Record<string, Category[]>,
   handleCategoryChange: (transaction_ID: string, category: string) => void
 ): ColumnDef<CategorizedTransaction>[] => [
   commonColumns[0],
@@ -210,4 +212,57 @@ export const reviewColumns = (
     },
   },
   commonColumns[5],
+  // Confidence column
+  {
+    accessorKey: 'confidence',
+    header: 'Confidence',
+    cell: ({ row }) => {
+      // Define confidence bar formatting for each section.
+      let barOneFormatting = 'w-8 h-6 m-1 bg-gray-200 rounded-l-lg';
+      let barTwoFormatting = 'w-8 h-6 m-1 bg-gray-200';
+      let barThreeFormatting = 'w-8 h-6 m-1 bg-gray-200 rounded-r-lg';
+      let confidenceValue = 0;
+      const categories: ClassifiedCategory[] = row.getValue('categories');
+      if (categories.length > 0) {
+        confidenceValue = 1;
+        // If a predicted category is found, change the first bar to green.
+        barOneFormatting = 'w-8 h-6 m-1 bg-green-400 rounded-l-lg';
+        for (const category of categories) {
+          if (category.classifiedBy === 'Database Lookup') {
+            // If the category is classified by database lookup, change the second bar to green.
+            barTwoFormatting = 'w-8 h-6 m-1 bg-green-400';
+            confidenceValue = 2;
+          }
+          if (category.classifiedBy === 'Fuzzy or Exact Match by Fuse') {
+            // If the category is classified by fuze match, change the second and third bars to green.
+            barTwoFormatting = 'w-8 h-6 m-1 bg-green-400';
+            barThreeFormatting = 'w-8 h-6 m-1 green-400 rounded-r-lg';
+            confidenceValue = 3;
+            break;
+          }
+        }
+      }
+      let hoverText = '';
+      if (confidenceValue == 0) {
+        hoverText = 'No category results found.';
+      }
+      if (confidenceValue == 1) {
+        hoverText = 'Results found by LLM prediction.';
+      }
+      if (confidenceValue == 2) {
+        hoverText = 'Results found by database check.';
+      }
+      if (confidenceValue == 3) {
+        hoverText = 'Results found by name matching.';
+      }
+      return (
+        <ConfidenceBar
+          barOne={barOneFormatting}
+          barTwo={barTwoFormatting}
+          barThree={barThreeFormatting}
+          hoverText={hoverText}
+        />
+      );
+    },
+  },
 ];

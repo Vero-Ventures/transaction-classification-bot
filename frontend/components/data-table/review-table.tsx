@@ -24,17 +24,20 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
+import { ClassifiedCategory } from '@/types/Category';
 import { reviewColumns } from './columns';
 
 export function ReviewTable({
   categorizedTransactions,
   selectedCategories,
+  categorizedResults,
   handleCategoryChange,
   handleSave,
   isSaving,
 }: {
   categorizedTransactions: CategorizedTransaction[];
   selectedCategories: Record<string, string>;
+  categorizedResults: Record<string, ClassifiedCategory[]>;
   handleCategoryChange: (transaction_ID: string, category: string) => void;
   handleSave: (selectedRows: CategorizedTransaction[]) => void;
   isSaving: boolean;
@@ -49,7 +52,11 @@ export function ReviewTable({
 
   const table = useReactTable({
     data: categorizedTransactions,
-    columns: reviewColumns(selectedCategories, handleCategoryChange),
+    columns: reviewColumns(
+      selectedCategories,
+      categorizedResults,
+      handleCategoryChange
+    ),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
