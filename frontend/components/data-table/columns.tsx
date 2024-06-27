@@ -4,7 +4,7 @@ import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import { ArrowUpDown } from 'lucide-react';
-import { Category } from '@/types/Category';
+import { Category, ClassifiedCategory } from '@/types/Category';
 
 // Define button for a sortable header
 const sortableHeader = (
@@ -178,6 +178,7 @@ export const selectionColumns: ColumnDef<Transaction>[] = [
 
 export const reviewColumns = (
   selectedCategories: Record<string, string>,
+  categorizedResults: Record<string, Category[]>,
   handleCategoryChange: (transaction_ID: string, category: string) => void
 ): ColumnDef<CategorizedTransaction>[] => [
   commonColumns[0],
@@ -210,4 +211,25 @@ export const reviewColumns = (
     },
   },
   commonColumns[5],
+  // Confidence column
+  {
+    accessorKey: 'confidence',
+    header: 'Confidence',
+    cell: ({ row }) => {
+      let confidence = 0;
+      const categories: ClassifiedCategory[] = row.getValue('categories');
+      if (categories.length > 0) {
+        for (const category of categories) {
+          if (category.classifiedBy === 'Fuzzy or Exact Match by Fuse') {
+            confidence = 3;
+            break;
+          }
+          if (category.classifiedBy === 'Database Lookup') {
+            confidence = 2;
+          }
+        }
+      }
+      return confidence;
+    },
+  },
 ];
