@@ -1,5 +1,6 @@
 import { Column, ColumnDef, Row, Table } from '@tanstack/react-table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ConfidenceBar } from '@/components/ui/confidence-bar';
 import { CategorizedTransaction, Transaction } from '@/types/Transaction';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
@@ -216,20 +217,52 @@ export const reviewColumns = (
     accessorKey: 'confidence',
     header: 'Confidence',
     cell: ({ row }) => {
-      let confidence = 0;
+      // Define confidence bar formatting for each section.
+      let barOneFormatting = 'w-8 h-6 m-1 bg-gray-200 rounded-l-lg';
+      let barTwoFormatting = 'w-8 h-6 m-1 bg-gray-200';
+      let barThreeFormatting = 'w-8 h-6 m-1 bg-gray-200 rounded-r-lg';
+      let confidenceValue = 0;
       const categories: ClassifiedCategory[] = row.getValue('categories');
       if (categories.length > 0) {
+        confidenceValue = 1;
+        // If a predicted category is found, change the first bar to green.
+        barOneFormatting = 'w-8 h-6 m-1 bg-green-400 rounded-l-lg';
         for (const category of categories) {
-          if (category.classifiedBy === 'Fuzzy or Exact Match by Fuse') {
-            confidence = 3;
-            break;
-          }
           if (category.classifiedBy === 'Database Lookup') {
-            confidence = 2;
+            // If the category is classified by database lookup, change the second bar to green.
+            barTwoFormatting = 'w-8 h-6 m-1 bg-green-400';
+            confidenceValue = 2;
+          }
+          if (category.classifiedBy === 'Fuzzy or Exact Match by Fuse') {
+            // If the category is classified by fuze match, change the second and third bars to green.
+            barTwoFormatting = 'w-8 h-6 m-1 bg-green-400';
+            barThreeFormatting = 'w-8 h-6 m-1 green-400 rounded-r-lg';
+            confidenceValue = 3;
+            break;
           }
         }
       }
-      return confidence;
+      let hoverText = '';
+      if (confidenceValue == 0) {
+        hoverText = 'No category results found.';
+      }
+      if (confidenceValue == 1) {
+        hoverText = 'Results found by LLM prediction.';
+      }
+      if (confidenceValue == 2) {
+        hoverText = 'Results found by database check.';
+      }
+      if (confidenceValue == 3) {
+        hoverText = 'Results found by name matching.';
+      }
+      return (
+        <ConfidenceBar
+          barOne={barOneFormatting}
+          barTwo={barTwoFormatting}
+          barThree={barThreeFormatting}
+          hoverText={hoverText}
+        />
+      );
     },
   },
 ];
