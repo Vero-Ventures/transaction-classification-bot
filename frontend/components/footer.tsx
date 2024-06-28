@@ -5,7 +5,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-800 py-6 mt-auto">
       <div className="container mx-auto px-4 flex justify-between items-center text-white">
-        <p>&copy; 2024 Transaction Classification Bot. All rights reserved.</p>
+        <p>&copy; AccuBot AI Transaction Classifier. All rights reserved.</p>
         <div className="flex space-x-4">
           <Link href="/privacy-policy" className="hover:underline">
             Privacy Policy & Terms of Service
