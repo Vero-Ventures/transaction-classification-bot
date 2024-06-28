@@ -8,7 +8,10 @@ const Footer = () => {
         <p>&copy; AccuBot AI Transaction Classifier. All rights reserved.</p>
         <div className="flex space-x-4">
           <Link href="/privacy-policy" className="hover:underline">
-            Privacy Policy & Terms of Service
+            Privacy Policy
+          </Link>
+          <Link href="/terms-of-service" className="hover:underline">
+            Terms of Service
           </Link>
           <Link href="https://github.com/Vero-Ventures/transaction-classification-bot">
             <FaGithub className="text-2xl hover:text-gray-400 transition-colors duration-300" />
