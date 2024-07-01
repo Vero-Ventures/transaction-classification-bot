@@ -12,7 +12,7 @@
     "postinstall": "node scripts/fix-jose.js"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.33",
+    "@ai-sdk/openai": "^0.0.34",
     "@ai-sdk/google": "^0.0.23",
     "@prisma/client": "^5.13.0",
     "@radix-ui/react-checkbox": "^1.0.4",
